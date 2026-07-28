@@ -1,2 +1,24 @@
-# medassist-ai
-A Multimodal Clinical Decision Support Platform powered by AI for disease prediction, medical image analysis, explainable AI, and intelligent clinical recommendations.
+# MedAssist AI
+
+A Multimodal Clinical Decision Support Platform.
+
+## Vision
+
+Assist healthcare professionals using AI-powered clinical decision support.
+
+## Current Phase
+
+Phase 1 - Research & Planning
+
+## Tech Stack
+
+- React
+- FastAPI
+- PostgreSQL
+- Scikit-learn
+- PyTorch
+- Docker
+
+## Status
+
+🚧 Under Development
