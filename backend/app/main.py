@@ -1,21 +1,18 @@
 from fastapi import FastAPI
+from app.core.config import settings
+from app.api.router import api_router
 
 app = FastAPI(
-    title="MedAssist AI API",
-    description="Multimodal Clinical Decision Support Platform",
-    version="1.0.0"
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    description="Multimodal Clinical Decision Support Platform"
 )
+
+app.include_router(api_router)
+
 
 @app.get("/")
 def root():
     return {
-        "message": "Welcome to MedAssist AI 🚀"
-    }
-
-@app.get("/health")
-def health_check():
-    return {
-        "status": "healthy",
-        "application": "MedAssist AI",
-        "version": "1.0.0"
+        "message": f"Welcome to {settings.APP_NAME} 🚀"
     }
