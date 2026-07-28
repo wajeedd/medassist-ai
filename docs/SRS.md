@@ -407,3 +407,130 @@ The system shall provide doctors with a dashboard to review patient information 
 - Patient list is searchable.
 - Recent assessments are visible.
 - Reports are downloadable.
+
+---
+
+# 4. Non-Functional Requirements
+
+## NFR-001: Performance
+
+**Requirement:**
+The system shall provide responsive performance for all core operations.
+
+**Acceptance Criteria:**
+- Dashboard loads within 3 seconds.
+- Patient search completes within 2 seconds.
+- AI predictions are returned within 5 seconds for structured clinical data.
+- PDF reports are generated within 10 seconds.
+
+---
+
+## NFR-002: Security
+
+**Requirement:**
+The platform shall protect sensitive patient information using industry-standard security practices.
+
+**Acceptance Criteria:**
+- Passwords are securely hashed.
+- Role-Based Access Control (RBAC) is enforced.
+- JWT authentication is used.
+- All API inputs are validated.
+- Sensitive information is never exposed in logs.
+
+---
+
+## NFR-003: Privacy
+
+**Requirement:**
+Patient information shall only be accessible to authorized users.
+
+**Acceptance Criteria:**
+- Users can only access data permitted by their role.
+- Patient identifiers are protected.
+- Reports are accessible only to authorized users.
+
+---
+
+## NFR-004: Scalability
+
+**Requirement:**
+The architecture shall support future expansion without major redesign.
+
+**Acceptance Criteria:**
+- AI services are modular.
+- New AI models can be integrated independently.
+- Database schema supports future healthcare modules.
+
+---
+
+## NFR-005: Reliability
+
+**Requirement:**
+The system shall remain stable during normal operation.
+
+**Acceptance Criteria:**
+- Invalid user input does not crash the application.
+- Unexpected errors are handled gracefully.
+- Failed AI predictions produce meaningful error messages.
+
+---
+
+## NFR-006: Maintainability
+
+**Requirement:**
+The software shall follow clean architecture and modular design principles.
+
+**Acceptance Criteria:**
+- Code follows consistent project structure.
+- Business logic is separated from presentation.
+- APIs are versioned.
+- Documentation is updated alongside implementation.
+
+---
+
+## NFR-007: Usability
+
+**Requirement:**
+The user interface shall be intuitive for healthcare professionals.
+
+**Acceptance Criteria:**
+- Navigation is consistent.
+- Forms provide validation feedback.
+- Important information is clearly highlighted.
+- Reports are easy to read.
+
+---
+
+## NFR-008: Explainability
+
+**Requirement:**
+AI predictions shall be accompanied by explanations that help clinicians understand the results.
+
+**Acceptance Criteria:**
+- Prediction confidence is displayed.
+- Key contributing features are shown.
+- Explanations are understandable by non-AI specialists.
+
+---
+
+## NFR-009: Compatibility
+
+**Requirement:**
+The application shall function on modern web browsers.
+
+**Acceptance Criteria:**
+- Chrome
+- Microsoft Edge
+- Firefox
+
+---
+
+## NFR-010: Extensibility
+
+**Requirement:**
+Future healthcare modules shall be integrated without redesigning the existing architecture.
+
+**Acceptance Criteria:**
+- New AI models can be added as independent services.
+- Additional patient data types can be supported.
+- APIs remain backward compatible.
