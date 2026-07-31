@@ -1,0 +1,80 @@
+from uuid import UUID
+
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.models.patient import Patient
+from app.repositories.patient_repository import PatientRepository
+from app.schemas.patient import PatientCreate, PatientUpdate
+
+
+class PatientService:
+
+    def __init__(self, db: Session):
+        self.repository = PatientRepository(db)
+
+    # -------------------------
+    # Create Patient
+    # -------------------------
+    def create_patient(
+        self,
+        patient_data: PatientCreate,
+        created_by: UUID,
+    ) -> Patient:
+
+        return self.repository.create(
+            patient_data=patient_data,
+            created_by=created_by,
+        )
+
+    # -------------------------
+    # Get Patient
+    # -------------------------
+    def get_patient(
+        self,
+        patient_id: UUID,
+    ) -> Patient:
+
+        patient = self.repository.get_by_id(patient_id)
+
+        if patient is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Patient not found",
+            )
+
+        return patient
+
+    # -------------------------
+    # Get All Patients
+    # -------------------------
+    def get_all_patients(self) -> list[Patient]:
+        return self.repository.get_all()
+
+    # -------------------------
+    # Update Patient
+    # -------------------------
+    def update_patient(
+        self,
+        patient_id: UUID,
+        patient_data: PatientUpdate,
+    ) -> Patient:
+
+        patient = self.get_patient(patient_id)
+
+        return self.repository.update(
+            patient,
+            patient_data,
+        )
+
+    # -------------------------
+    # Delete Patient
+    # -------------------------
+    def delete_patient(
+        self,
+        patient_id: UUID,
+    ) -> None:
+
+        patient = self.get_patient(patient_id)
+
+        self.repository.delete(patient)
