@@ -21,8 +21,10 @@ class MedicalRecordService:
         doctor_id: UUID,
     ) -> MedicalRecord:
 
-        patient_repo = PatientRepository(db)
-        patient = patient_repo.get_by_id(medical_record.patient_id)
+        patient = PatientRepository.get_by_id(
+            db=db,
+            patient_id=medical_record.patient_id,
+       )
 
         if not patient:
             raise HTTPException(

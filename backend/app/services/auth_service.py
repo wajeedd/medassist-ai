@@ -25,29 +25,47 @@ class AuthService:
             email=request.email,
             hashed_password=hash_password(request.password),
             role=UserRole.DOCTOR,
-            is_active=True,
+           
         )
 
         return UserRepository.create(db, user)
 
     @staticmethod
     def login(db: Session, request: LoginRequest):
+        print("=" * 50)
+        print("EMAIL RECEIVED:", request.email)
+
         user = UserRepository.get_by_email(db, request.email)
+
+        print("USER FOUND:", user)
+
+        if user:
+            print("HASH FROM DB:", user.hashed_password)
+
+            result = verify_password(
+            request.password,
+            user.hashed_password,
+        )
+
+        print("PASSWORD VERIFIED:", result)
 
         if not user:
             raise ValueError("Invalid email or password.")
 
-        if not verify_password(request.password, user.hashed_password):
+        if not verify_password(
+        request.password,
+        user.hashed_password,
+    ):
             raise ValueError("Invalid email or password.")
 
         token = create_access_token(
-            {
-                "sub": str(user.id),
-                "role": user.role.value,
-            }
-        )
+        {
+            "sub": str(user.id),
+            "role": user.role.value,
+        }
+    )
 
         return {
-            "access_token": token,
-            "token_type": "bearer",
-        }
+        "access_token": token,
+        "token_type": "bearer",
+    }

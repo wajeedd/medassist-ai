@@ -9,14 +9,12 @@ from app.schemas.patient import PatientCreate, PatientUpdate
 
 class PatientRepository:
 
-    def __init__(self, db: Session):
-        self.db = db
-
     # -------------------------
     # Create Patient
     # -------------------------
+    @staticmethod
     def create(
-        self,
+        db: Session,
         patient_data: PatientCreate,
         created_by: UUID,
     ) -> Patient:
@@ -26,57 +24,70 @@ class PatientRepository:
             created_by=created_by,
         )
 
-        self.db.add(patient)
-        self.db.commit()
-        self.db.refresh(patient)
+        db.add(patient)
+        db.commit()
+        db.refresh(patient)
 
         return patient
 
     # -------------------------
     # Get Patient By ID
     # -------------------------
+    @staticmethod
     def get_by_id(
-        self,
+        db: Session,
         patient_id: UUID,
     ) -> Patient | None:
 
-        return self.db.get(Patient, patient_id)
+        return db.get(
+            Patient,
+            patient_id,
+        )
 
     # -------------------------
     # Get All Patients
     # -------------------------
-    def get_all(self) -> list[Patient]:
+    @staticmethod
+    def get_all(
+        db: Session,
+    ) -> list[Patient]:
 
         stmt = select(Patient)
 
-        return list(self.db.scalars(stmt).all())
+        return list(
+            db.scalars(stmt).all()
+        )
 
     # -------------------------
     # Update Patient
     # -------------------------
+    @staticmethod
     def update(
-        self,
+        db: Session,
         patient: Patient,
         patient_data: PatientUpdate,
     ) -> Patient:
 
-        update_data = patient_data.model_dump(exclude_unset=True)
+        update_data = patient_data.model_dump(
+            exclude_unset=True,
+        )
 
         for key, value in update_data.items():
             setattr(patient, key, value)
 
-        self.db.commit()
-        self.db.refresh(patient)
+        db.commit()
+        db.refresh(patient)
 
         return patient
 
     # -------------------------
     # Delete Patient
     # -------------------------
+    @staticmethod
     def delete(
-        self,
+        db: Session,
         patient: Patient,
     ) -> None:
 
-        self.db.delete(patient)
-        self.db.commit()
+        db.delete(patient)
+        db.commit()

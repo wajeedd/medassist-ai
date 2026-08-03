@@ -11,7 +11,7 @@ from app.schemas.patient import PatientCreate, PatientUpdate
 class PatientService:
 
     def __init__(self, db: Session):
-        self.repository = PatientRepository(db)
+        self.db = db
 
     # -------------------------
     # Create Patient
@@ -22,7 +22,8 @@ class PatientService:
         created_by: UUID,
     ) -> Patient:
 
-        return self.repository.create(
+        return PatientRepository.create(
+            db=self.db,
             patient_data=patient_data,
             created_by=created_by,
         )
@@ -35,7 +36,10 @@ class PatientService:
         patient_id: UUID,
     ) -> Patient:
 
-        patient = self.repository.get_by_id(patient_id)
+        patient = PatientRepository.get_by_id(
+            db=self.db,
+            patient_id=patient_id,
+        )
 
         if patient is None:
             raise HTTPException(
@@ -49,7 +53,10 @@ class PatientService:
     # Get All Patients
     # -------------------------
     def get_all_patients(self) -> list[Patient]:
-        return self.repository.get_all()
+
+        return PatientRepository.get_all(
+            db=self.db,
+        )
 
     # -------------------------
     # Update Patient
@@ -62,9 +69,10 @@ class PatientService:
 
         patient = self.get_patient(patient_id)
 
-        return self.repository.update(
-            patient,
-            patient_data,
+        return PatientRepository.update(
+            db=self.db,
+            patient=patient,
+            patient_data=patient_data,
         )
 
     # -------------------------
@@ -77,4 +85,7 @@ class PatientService:
 
         patient = self.get_patient(patient_id)
 
-        self.repository.delete(patient)
+        PatientRepository.delete(
+            db=self.db,
+            patient=patient,
+        )
