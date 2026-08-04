@@ -1,5 +1,5 @@
 from uuid import UUID
-
+from app.services.ai_service import AIService
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -13,7 +13,6 @@ from app.schemas.medical_record import (
 
 
 class MedicalRecordService:
-
     @staticmethod
     def create_medical_record(
         db: Session,
@@ -24,7 +23,7 @@ class MedicalRecordService:
         patient = PatientRepository.get_by_id(
             db=db,
             patient_id=medical_record.patient_id,
-       )
+        )
 
         if not patient:
             raise HTTPException(
@@ -32,12 +31,23 @@ class MedicalRecordService:
                 detail="Patient not found",
             )
 
-        return MedicalRecordRepository.create(
-            db,
-            medical_record,
-            doctor_id,
+        # Create the medical record
+        record = MedicalRecordRepository.create(
+            db=db,
+            medical_record=medical_record,
+            doctor_id=doctor_id,
         )
 
+        # Automatically generate AI analysis
+        AIService.analyze_medical_record(
+            db=db,
+            medical_record_id=record.id,
+        )
+
+        # Reload record to get updated AI fields
+        db.refresh(record)
+
+        return record
     @staticmethod
     def get_medical_record(
         db: Session,
