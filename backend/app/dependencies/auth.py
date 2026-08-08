@@ -20,6 +20,9 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
+    print("=" * 60)
+    print("TOKEN:", token)
+
     try:
         payload = jwt.decode(
             token,
@@ -27,15 +30,27 @@ def get_current_user(
             algorithms=[settings.ALGORITHM],
         )
 
+        print("PAYLOAD:", payload)
+
         user_id = payload.get("sub")
 
+        print("USER ID:", user_id)
+
         if user_id is None:
+            print("SUB IS NONE")
             raise credentials_exception
 
-    except JWTError:
+    except JWTError as e:
+        print("JWT ERROR:", e)
         raise credentials_exception
 
-    user = UserRepository.get_by_id(db, user_id)
+    user = UserRepository.get_by_id(
+        db,
+        user_id,
+    )
+
+    print("USER:", user)
+    print("=" * 60)
 
     if user is None:
         raise credentials_exception
