@@ -1,8 +1,10 @@
 import PatientRow from "./PatientRow";
 
 function PatientTable({
-  patients,
-  onView,
+    patients,
+    onView,
+    onEdit,
+    onDelete,
 }) {
 
   if (patients.length === 0) {
@@ -51,9 +53,10 @@ function PatientTable({
           {patients.map((patient) => (
 
             <PatientRow
-              key={patient.id}
               patient={patient}
               onView={onView}
+              onEdit={onEdit}
+              onDelete={onDelete}
             />
 
           ))}

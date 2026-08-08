@@ -1,146 +1,94 @@
-import { useEffect, useMemo, useState } from "react";
-import {
-  Plus,
-  Users,
-  Mars,
-  Venus,
-  Droplets,
-} from "lucide-react";
-import { toast } from "react-toastify";
-
+import { useState } from "react";
+import EditPatientModal from "../../components/patients/EditPatientModal";
 import PageLayout from "../../components/layout/PageLayout";
-import StatCard from "../../components/common/StatCard";
 
-
-import PatientSearch from "../../components/patients/PatientSearch";
+import PatientsHeader from "./PatientsHeader";
+import PatientsStats from "./PatientsStats";
+import PatientsToolbar from "./PatientsToolbar";
+import DeletePatientModal from "../../components/patients/DeletePatientModal";
 import PatientTable from "../../components/patients/PatientTable";
 import AddPatientModal from "../../components/patients/AddPatientModal";
-import PatientForm from "../../components/patients/PatientForm";
 import PatientDetailsModal from "../../components/patients/PatientDetailsModal";
+import PatientForm from "../../components/patients/PatientForm";
 
-import {
-  getPatients,
-  createPatient,
-} from "../../services/patientService";
+import usePatients from "../../hooks/usePatients";
 
 function Patients() {
+  const {
+  filteredPatients,
+  loading,
+  saving,
+  stats,
 
-  const emptyForm = {
-    first_name: "",
-    last_name: "",
-    date_of_birth: "",
+  search,
+  setSearch,
 
-    gender: "",
-    blood_group: "",
+  formData,
+  setFormData,
 
-    phone: "",
-    email: "",
+  emptyForm,
 
-    address: "",
-    city: "",
-    state: "",
-    country: "",
-    postal_code: "",
-
-    emergency_contact_name: "",
-    emergency_contact_relationship: "",
-    emergency_contact_phone: "",
-
-    height_cm: "",
-    weight_kg: "",
-
-    allergies: "",
-    medical_conditions: "",
-    current_medications: "",
-  };
-
-  const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  const [search, setSearch] = useState("");
-
+  addPatient,
+  editPatient,
+  removePatient,
+} = usePatients();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-
-  const [formData, setFormData] = useState(emptyForm);
-
-  const loadPatients = async () => {
-
-    try {
-
-      const data = await getPatients();
-
-      setPatients(data);
-
-    } catch (error) {
-
-      console.error(error);
-
-      toast.error("Failed to load patients.");
-
-    }
-
-  };
-
-  useEffect(() => {
-
-    async function init() {
-
-      setLoading(true);
-
-      await loadPatients();
-
-      setLoading(false);
-
-    }
-
-    init();
-
-  }, []);
+  const [editingPatient, setEditingPatient] = useState(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [deletingPatient, setDeletingPatient] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const handleChange = (e) => {
-
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-
-  };
+  setFormData({
+    ...formData,
+    [e.target.name]: e.target.value,
+  });
+};
 
   const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    e.preventDefault();
+  const success = await addPatient();
 
-    try {
+  if (success) {
+    setIsModalOpen(false);
+    setFormData(emptyForm);
+  }
+};
+   const handleEditSubmit = async (e) => {
 
-      setSaving(true);
+  e.preventDefault();
 
-      await createPatient(formData);
+  const success = await editPatient(editingPatient.id);
 
-      toast.success("Patient added successfully!");
+  if (success) {
 
-      setIsModalOpen(false);
+    setIsEditOpen(false);
 
-      setFormData(emptyForm);
+    setEditingPatient(null);
 
-      await loadPatients();
+    setFormData(emptyForm);
 
-    } catch (error) {
+  }
 
-      console.error(error);
+};
+  const confirmDelete = async () => {
 
-      toast.error("Failed to add patient.");
+  const success =
+    await removePatient(deletingPatient.id);
 
-    } finally {
+  if (success) {
 
-      setSaving(false);
+    setIsDeleteOpen(false);
 
-    }
+    setDeletingPatient(null);
 
-  };
+  }
+
+};
 
   const handleViewPatient = (patient) => {
 
@@ -150,72 +98,35 @@ function Patients() {
 
   };
 
-  const filteredPatients = useMemo(() => {
+  const handleEditPatient = (patient) => {
 
-    return patients.filter((patient) => {
+  setEditingPatient(patient);
 
-      const fullName =
-        `${patient.first_name} ${patient.last_name}`.toLowerCase();
-
-      return (
-
-        fullName.includes(search.toLowerCase()) ||
-
-        patient.phone.includes(search) ||
-
-        (patient.email || "")
-          .toLowerCase()
-          .includes(search.toLowerCase())
-
-      );
-
-    });
-
-  }, [patients, search]);
-
-  const stats = useMemo(() => {
-
-  const males =
-    patients.filter(
-      p => p.gender === "male"
-    ).length;
-
-  const females =
-    patients.filter(
-      p => p.gender === "female"
-    ).length;
-
-  const bloodGroups = {};
-
-  patients.forEach((p) => {
-
-    if (!p.blood_group) return;
-
-    bloodGroups[p.blood_group] =
-      (bloodGroups[p.blood_group] || 0) + 1;
-
+  setFormData({
+    ...patient,
+    date_of_birth: patient.date_of_birth ?? "",
+    blood_group: patient.blood_group ?? "",
+    email: patient.email ?? "",
+    allergies: patient.allergies ?? "",
+    medical_conditions: patient.medical_conditions ?? "",
+    current_medications: patient.current_medications ?? "",
+    height_cm: patient.height_cm ?? "",
+    weight_kg: patient.weight_kg ?? "",
   });
 
-  const mostCommonBlood =
-    Object.keys(bloodGroups).length
-      ? Object.keys(bloodGroups).reduce((a, b) =>
-          bloodGroups[a] > bloodGroups[b] ? a : b
-        )
-      : "-";
+  setIsEditOpen(true);
 
-  return {
+};
+  const handleDeletePatient = (patient) => {
 
-    total: patients.length,
+  setDeletingPatient(patient);
 
-    males,
+  setIsDeleteOpen(true);
 
-    females,
+};
 
-    blood: mostCommonBlood,
 
-  };
-
-}, [patients]);
+  
 
   return (
 
@@ -223,70 +134,20 @@ function Patients() {
 
       {/* Header */}
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-8">
-
-        <div>
-
-          <h1 className="text-4xl font-bold text-slate-800">
-            Patients
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-            Manage all registered patients
-          </p>
-
-        </div>
-
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg transition"
-        >
-
-          <Plus size={20} />
-
-          Add Patient
-
-        </button>
-
-      </div>
-<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
-
-  <StatCard
-    title="Total Patients"
-    value={stats.total}
-    icon={<Users size={28} />}
-  />
-
-  <StatCard
-    title="Male"
-    value={stats.males}
-    icon={<Mars size={28} />}
-    color="bg-blue-600"
-  />
-
-  <StatCard
-    title="Female"
-    value={stats.females}
-    icon={<Venus size={28} />}
-    color="bg-pink-600"
-  />
-
-  <StatCard
-    title="Most Common Blood Group"
-    value={stats.blood}
-    icon={<Droplets size={28} />}
-    color="bg-red-600"
-  />
-
-</div>
+      <PatientsHeader
+  onAddPatient={() => setIsModalOpen(true)}
+/>
+<PatientsStats
+  stats={stats}
+/>
       {/* Search */}
 
       <div className="mb-6">
 
-        <PatientSearch
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <PatientsToolbar
+  search={search}
+  setSearch={setSearch}
+/>
 
       </div>
 
@@ -313,37 +174,73 @@ function Patients() {
           <PatientTable
             patients={filteredPatients}
             onView={handleViewPatient}
+            onEdit={handleEditPatient}
+            onDelete={handleDeletePatient}
           />
 
         )
 
       }
 
+      
       {/* Add Patient */}
 
-      <AddPatientModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      >
+<AddPatientModal
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+>
 
-        <PatientForm
-          formData={formData}
-          handleChange={handleChange}
-          handleSubmit={handleSubmit}
-          loading={saving}
-          submitText="Save Patient"
-        />
+  <PatientForm
+    formData={formData}
+    handleChange={handleChange}
+    handleSubmit={handleSubmit}
+    loading={saving}
+    submitText="Save Patient"
+  />
 
-      </AddPatientModal>
+</AddPatientModal>
 
-      {/* View Patient */}
+{/* Edit Patient */}
 
-      <PatientDetailsModal
-        patient={selectedPatient}
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
-      />
+<EditPatientModal
+  isOpen={isEditOpen}
+  onClose={() => {
+    setIsEditOpen(false);
+    setEditingPatient(null);
+    setFormData(emptyForm);
+  }}
+>
+  
+  <PatientForm
+    formData={formData}
+    handleChange={handleChange}
+    handleSubmit={handleEditSubmit}
+    loading={saving}
+    submitText="Save Changes"
+  />
+</EditPatientModal>
+  
+  {/* Delete Patient */}
 
+<DeletePatientModal
+  patient={deletingPatient}
+  isOpen={isDeleteOpen}
+  onClose={() => {
+    setIsDeleteOpen(false);
+    setDeletingPatient(null);
+  }}
+  onConfirm={confirmDelete}
+  loading={saving}
+/>
+{/* View Patient */}
+
+<PatientDetailsModal
+  patient={selectedPatient}
+  isOpen={isDetailsOpen}
+  onClose={() => setIsDetailsOpen(false)}
+/>
+
+     
     </PageLayout>
 
   );

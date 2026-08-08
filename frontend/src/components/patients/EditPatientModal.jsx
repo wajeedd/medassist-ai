@@ -9,8 +9,7 @@ function EditPatientModal({
     <AnimatedModal
       isOpen={isOpen}
       onClose={onClose}
-      title="✏ Edit Patient"
-      maxWidth="max-w-5xl"
+      title="Edit Patient"
     >
       {children}
     </AnimatedModal>

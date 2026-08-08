@@ -10,8 +10,10 @@ import { motion } from "framer-motion";
 import Avatar from "../common/Avatar";
 
 function PatientRow({
-  patient,
-  onView,
+    patient,
+    onView,
+    onEdit,
+    onDelete,
 }) {
   return (
     <motion.tr
@@ -123,6 +125,7 @@ function PatientRow({
           </button>
 
           <button
+            onClick={() => onEdit(patient)}
             className="p-2 rounded-xl bg-yellow-100 hover:bg-yellow-200 transition"
           >
             <Pencil
@@ -132,6 +135,7 @@ function PatientRow({
           </button>
 
           <button
+            onClick={() => onDelete(patient)}
             className="p-2 rounded-xl bg-red-100 hover:bg-red-200 transition"
           >
             <Trash2
