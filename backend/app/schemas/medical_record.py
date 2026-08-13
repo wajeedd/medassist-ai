@@ -11,6 +11,7 @@ from app.enums.visit_type import VisitType
 # Create Medical Record
 # -------------------------
 class MedicalRecordCreate(BaseModel):
+
     patient_id: UUID
 
     visit_date: date
@@ -30,7 +31,6 @@ class MedicalRecordCreate(BaseModel):
     oxygen_saturation: Optional[float] = None
 
     prescription: Optional[str] = None
-
     follow_up_date: Optional[date] = None
 
 
@@ -38,6 +38,7 @@ class MedicalRecordCreate(BaseModel):
 # Update Medical Record
 # -------------------------
 class MedicalRecordUpdate(BaseModel):
+
     visit_date: Optional[date] = None
     visit_type: Optional[VisitType] = None
 
@@ -55,7 +56,6 @@ class MedicalRecordUpdate(BaseModel):
     oxygen_saturation: Optional[float] = None
 
     prescription: Optional[str] = None
-
     follow_up_date: Optional[date] = None
 
 
@@ -63,6 +63,7 @@ class MedicalRecordUpdate(BaseModel):
 # Medical Record Response
 # -------------------------
 class MedicalRecordResponse(BaseModel):
+
     id: UUID
 
     patient_id: UUID
@@ -85,9 +86,9 @@ class MedicalRecordResponse(BaseModel):
     oxygen_saturation: Optional[float]
 
     prescription: Optional[str]
-
     follow_up_date: Optional[date]
 
+    # AI fields
     ai_summary: Optional[str]
     ai_risk_score: Optional[float]
     ai_recommendation: Optional[str]

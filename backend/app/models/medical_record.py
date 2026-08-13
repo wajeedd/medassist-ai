@@ -1,8 +1,18 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 
-from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, String, Text, func
+from sqlalchemy import (
+    Date,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -13,14 +23,20 @@ from app.enums.visit_type import VisitType
 class MedicalRecord(Base):
     __tablename__ = "medical_records"
 
+    # -------------------------
     # Primary Key
+    # -------------------------
+
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
     )
 
-    # Relationships
+    # -------------------------
+    # Relationships / Foreign Keys
+    # -------------------------
+
     patient_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("patients.id"),
@@ -33,7 +49,10 @@ class MedicalRecord(Base):
         nullable=False,
     )
 
+    # -------------------------
     # Visit Information
+    # -------------------------
+
     visit_date: Mapped[date] = mapped_column(
         Date,
         nullable=False,
@@ -49,7 +68,10 @@ class MedicalRecord(Base):
         nullable=False,
     )
 
+    # -------------------------
     # Clinical Information
+    # -------------------------
+
     symptoms: Mapped[Optional[str]] = mapped_column(
         Text,
         nullable=True,
@@ -70,7 +92,10 @@ class MedicalRecord(Base):
         nullable=True,
     )
 
+    # -------------------------
     # Vital Signs
+    # -------------------------
+
     temperature: Mapped[Optional[float]] = mapped_column(
         Float,
         nullable=True,
@@ -82,10 +107,12 @@ class MedicalRecord(Base):
     )
 
     heart_rate: Mapped[Optional[int]] = mapped_column(
+        Integer,
         nullable=True,
     )
 
     respiratory_rate: Mapped[Optional[int]] = mapped_column(
+        Integer,
         nullable=True,
     )
 
@@ -94,7 +121,10 @@ class MedicalRecord(Base):
         nullable=True,
     )
 
+    # -------------------------
     # Prescription
+    # -------------------------
+
     prescription: Mapped[Optional[str]] = mapped_column(
         Text,
         nullable=True,
@@ -105,7 +135,11 @@ class MedicalRecord(Base):
         nullable=True,
     )
 
-    # AI Fields (for future phases)
+    # -------------------------
+    # AI Fields
+    # Reserved for future AI phase
+    # -------------------------
+
     ai_summary: Mapped[Optional[str]] = mapped_column(
         Text,
         nullable=True,
@@ -121,19 +155,25 @@ class MedicalRecord(Base):
         nullable=True,
     )
 
-    # Audit
-    created_at: Mapped[date] = mapped_column(
+    # -------------------------
+    # Audit Information
+    # -------------------------
+
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
     )
 
-    updated_at: Mapped[date] = mapped_column(
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now(),
     )
 
+    # -------------------------
     # Relationships
+    # -------------------------
+
     patient = relationship(
         "Patient",
         back_populates="medical_records",

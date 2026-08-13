@@ -13,11 +13,16 @@ from app.schemas.medical_record import (
 )
 from app.services.medical_record_service import MedicalRecordService
 
+
 router = APIRouter(
     prefix="/medical-records",
     tags=["Medical Records"],
 )
 
+
+# -------------------------
+# Create Medical Record
+# -------------------------
 
 @router.post(
     "",
@@ -36,6 +41,10 @@ def create_medical_record(
     )
 
 
+# -------------------------
+# Get All Medical Records
+# -------------------------
+
 @router.get(
     "",
     response_model=list[MedicalRecordResponse],
@@ -46,6 +55,30 @@ def get_all_medical_records(
 ):
     return MedicalRecordService.get_all_medical_records(db)
 
+
+# -------------------------
+# Get Medical Records by Patient
+# IMPORTANT: Keep this BEFORE /{medical_record_id}
+# -------------------------
+
+@router.get(
+    "/patient/{patient_id}",
+    response_model=list[MedicalRecordResponse],
+)
+def get_patient_medical_records(
+    patient_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return MedicalRecordService.get_patient_medical_records(
+        db,
+        patient_id,
+    )
+
+
+# -------------------------
+# Get Medical Record by ID
+# -------------------------
 
 @router.get(
     "/{medical_record_id}",
@@ -62,20 +95,9 @@ def get_medical_record(
     )
 
 
-@router.get(
-    "/patient/{patient_id}",
-    response_model=list[MedicalRecordResponse],
-)
-def get_patient_medical_records(
-    patient_id: UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    return MedicalRecordService.get_patient_medical_records(
-        db,
-        patient_id,
-    )
-
+# -------------------------
+# Update Medical Record
+# -------------------------
 
 @router.put(
     "/{medical_record_id}",
@@ -93,6 +115,10 @@ def update_medical_record(
         request,
     )
 
+
+# -------------------------
+# Delete Medical Record
+# -------------------------
 
 @router.delete(
     "/{medical_record_id}",
