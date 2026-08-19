@@ -10,55 +10,95 @@ import {
 
 import { NavLink } from "react-router-dom";
 
+
 function Sidebar() {
 
   const menu = [
+
     {
       name: "Dashboard",
       icon: LayoutDashboard,
       path: "/dashboard",
     },
+
     {
       name: "Patients",
       icon: Users,
       path: "/patients",
     },
+
     {
       name: "Medical Records",
       icon: FileText,
       path: "/medical-records",
     },
+
     {
       name: "AI Analysis",
       icon: Brain,
       path: "/ai-analysis",
     },
+
     {
       name: "Reports",
       icon: FileDown,
       path: "/reports",
     },
+
     {
       name: "Settings",
       icon: Settings,
       path: "/settings",
     },
+
   ];
 
+
+  // ==========================================
+  // LOGOUT
+  // ==========================================
+
+  const handleLogout = () => {
+
+    localStorage.removeItem("access_token");
+
+    // Force reload so AuthContext
+    // re-checks authentication state.
+
+    window.location.href = "/login";
+
+  };
+
+
   return (
+
     <aside className="w-72 bg-slate-900 text-white min-h-screen flex flex-col">
+
+
+      {/* ==========================================
+          LOGO
+      ========================================== */}
 
       <div className="text-center py-8">
 
         <h1 className="text-3xl font-bold text-blue-400">
+
           🏥
+
         </h1>
 
         <h2 className="text-xl font-bold mt-2">
+
           MedAssist AI
+
         </h2>
 
       </div>
+
+
+      {/* ==========================================
+          NAVIGATION
+      ========================================== */}
 
       <nav className="flex-1">
 
@@ -67,6 +107,7 @@ function Sidebar() {
           const Icon = item.icon;
 
           return (
+
             <NavLink
               key={item.name}
               to={item.path}
@@ -81,26 +122,44 @@ function Sidebar() {
 
               <Icon size={20} />
 
-              <span>{item.name}</span>
+              <span>
+
+                {item.name}
+
+              </span>
 
             </NavLink>
+
           );
 
         })}
 
       </nav>
 
+
+      {/* ==========================================
+          LOGOUT
+      ========================================== */}
+
       <button
-        className="flex items-center gap-4 px-6 py-5 hover:bg-red-600 transition"
+        type="button"
+        onClick={handleLogout}
+        className="flex items-center gap-4 px-6 py-5 hover:bg-red-600 transition w-full text-left"
       >
 
         <LogOut size={20} />
 
-        Logout
+        <span>
+
+          Logout
+
+        </span>
 
       </button>
 
+
     </aside>
+
   );
 
 }

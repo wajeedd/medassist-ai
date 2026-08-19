@@ -17,6 +17,16 @@ export const getPatientMedicalRecords = async (patientId) => {
   const response = await api.get(
     `/medical-records/patient/${patientId}`
   );
+
+  return response.data;
+};
+
+// Get AI-powered longitudinal analysis for a patient
+export const getPatientLongitudinalAnalysis = async (patientId) => {
+  const response = await api.get(
+    `/medical-records/patient/${patientId}/longitudinal-analysis`
+  );
+
   return response.data;
 };
 
@@ -26,6 +36,7 @@ export const createMedicalRecord = async (data) => {
     "/medical-records",
     data
   );
+
   return response.data;
 };
 
@@ -35,6 +46,7 @@ export const updateMedicalRecord = async (id, data) => {
     `/medical-records/${id}`,
     data
   );
+
   return response.data;
 };
 
@@ -43,5 +55,6 @@ export const deleteMedicalRecord = async (id) => {
   const response = await api.delete(
     `/medical-records/${id}`
   );
+
   return response.data;
 };

@@ -1,12 +1,11 @@
 import PatientRow from "./PatientRow";
 
 function PatientTable({
-    patients,
-    onView,
-    onEdit,
-    onDelete,
+  patients,
+  onView,
+  onEdit,
+  onDelete,
 }) {
-
   if (patients.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow p-10 text-center text-gray-500">
@@ -53,6 +52,7 @@ function PatientTable({
           {patients.map((patient) => (
 
             <PatientRow
+              key={patient.id}
               patient={patient}
               onView={onView}
               onEdit={onEdit}
@@ -67,7 +67,6 @@ function PatientTable({
 
     </div>
   );
-
 }
 
 export default PatientTable;

@@ -1,5 +1,6 @@
 from uuid import UUID
-
+from app.schemas.ai import LongitudinalAIResponse
+from app.services.ai_service import AIService
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
@@ -75,7 +76,24 @@ def get_patient_medical_records(
         patient_id,
     )
 
+# -------------------------
+# AI Longitudinal Patient Analysis
+# IMPORTANT: Keep this BEFORE /{medical_record_id}
+# -------------------------
 
+@router.get(
+    "/patient/{patient_id}/longitudinal-analysis",
+    response_model=LongitudinalAIResponse,
+)
+def analyze_patient_longitudinal_history(
+    patient_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return AIService.analyze_patient_history(
+        db=db,
+        patient_id=patient_id,
+    )
 # -------------------------
 # Get Medical Record by ID
 # -------------------------
