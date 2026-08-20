@@ -41,8 +41,9 @@ class PDFGenerator:
     @staticmethod
     def _risk_level(score):
 
+
         if score is None:
-            return "Unknown"
+            return "INSUFFICIENT DATA"
 
         if score <= 30:
             return "LOW"
@@ -402,15 +403,23 @@ class PDFGenerator:
             )
         )
 
-        risk_score = medical_record.ai_risk_score or 0
-        risk_level = PDFGenerator._risk_level(risk_score)
+        risk_score = medical_record.ai_risk_score
+
+        risk_level = PDFGenerator._risk_level(
+            risk_score
+        )
 
         if risk_level == "LOW":
             risk_color = colors.green
+
         elif risk_level == "MEDIUM":
             risk_color = colors.orange
-        else:
+
+        elif risk_level == "HIGH":
             risk_color = colors.red
+
+        else:
+            risk_color = colors.grey    
 
         story.append(
             Paragraph(
@@ -427,10 +436,17 @@ class PDFGenerator:
         )
 
         story.append(Spacer(1, 10))
+        
+
+        display_risk_score = (
+            f"{risk_score} / 100"
+            if risk_score is not None
+            else "Insufficient Data"
+        )
 
         risk_table = Table(
-            [
-                ["Risk Score", f"{risk_score} / 100"],
+            [       
+                ["Risk Score", display_risk_score],
                 ["Risk Level", risk_level],
             ],
             colWidths=[180, 260],

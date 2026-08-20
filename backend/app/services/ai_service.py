@@ -44,7 +44,25 @@ class AIService:
 
         try:
 
-            data = json.loads(response)
+            cleaned_response = response.strip()
+
+            # Remove Markdown code fences if Gemini returns them
+            cleaned_response = re.sub(
+                r"^```(?:json)?\s*",
+                "",
+                cleaned_response,
+                flags=re.IGNORECASE,
+            )
+
+            cleaned_response = re.sub(
+                r"\s*```$",
+                "",
+                cleaned_response,
+            )
+
+            cleaned_response = cleaned_response.strip()
+
+            data = json.loads(cleaned_response)
 
             return AIAnalysisResponse(**data)
 
@@ -64,6 +82,109 @@ class AIService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to parse AI response.",
             )
+
+
+    # =====================================================
+    # CHECK WHETHER MEDICAL RECORD HAS ENOUGH DATA
+    # =====================================================
+
+    @staticmethod
+    def has_sufficient_clinical_data(
+        medical_record: MedicalRecord,
+    ) -> bool:
+
+        # -------------------------------------------------
+        # Required clinical narrative fields
+        # -------------------------------------------------
+
+        narrative_fields = [
+            medical_record.chief_complaint,
+            medical_record.symptoms,
+            medical_record.diagnosis,
+            medical_record.treatment_plan,
+            medical_record.doctor_notes,
+        ]
+
+        valid_narrative_fields = [
+            str(value).strip()
+            for value in narrative_fields
+            if value is not None
+            and str(value).strip()
+        ]
+
+        # -------------------------------------------------
+        # Vital signs
+        # -------------------------------------------------
+
+        vital_signs = [
+            medical_record.temperature,
+            medical_record.blood_pressure,
+            medical_record.heart_rate,
+            medical_record.respiratory_rate,
+            medical_record.oxygen_saturation,
+        ]
+
+        valid_vital_signs = [
+            value
+            for value in vital_signs
+            if value is not None
+        ]
+
+        # -------------------------------------------------
+        # Detect obvious placeholder text
+        # -------------------------------------------------
+
+        placeholder_values = {
+            "zxc",
+            "zxc zx",
+            "nooooas",
+            "sdf",
+            "czx",
+            "test",
+            "testing",
+            "abc",
+            "xyz",
+            "n/a",
+            "na",
+            "none",
+        }
+
+        has_placeholder = False
+
+        for value in valid_narrative_fields:
+
+            normalized = (
+                value.lower()
+                .strip()
+            )
+
+            if normalized in placeholder_values:
+                has_placeholder = True
+                break
+
+        # -------------------------------------------------
+        # Clinical data is insufficient when:
+        #
+        # 1. No meaningful narrative AND
+        # 2. No vital signs
+        #
+        # OR obvious placeholder-only documentation exists.
+        # -------------------------------------------------
+
+        if (
+            not valid_narrative_fields
+            and not valid_vital_signs
+        ):
+            return False
+
+        if (
+            has_placeholder
+            and not valid_vital_signs
+            and len(valid_narrative_fields) <= 1
+        ):
+            return False
+
+        return True
 
 
     # =====================================================
@@ -100,26 +221,70 @@ class AIService:
                 detail="Patient not found.",
             )
 
+        # -------------------------------------------------
+        # Generate AI analysis
+        # -------------------------------------------------
+
         analysis = AIService.analyze(
             patient,
             medical_record,
         )
 
-        # -----------------------------------------
-        # Save AI output into database
-        # -----------------------------------------
+        # -------------------------------------------------
+        # Check clinical data quality
+        # -------------------------------------------------
 
-        medical_record.ai_summary = analysis.summary
-
-        medical_record.ai_risk_score = analysis.risk_score
-
-        medical_record.ai_recommendation = "\n".join(
-            analysis.recommendations
+        sufficient_data = (
+            AIService.has_sufficient_clinical_data(
+                medical_record
+            )
         )
+
+        # -------------------------------------------------
+        # Save AI summary
+        # -------------------------------------------------
+
+        medical_record.ai_summary = (
+            analysis.summary
+        )
+
+        # -------------------------------------------------
+        # Save risk score
+        #
+        # If the record does not contain enough clinical
+        # information, do NOT save AI's 0 as a genuine
+        # low-risk score.
+        # -------------------------------------------------
+
+        if sufficient_data:
+
+            medical_record.ai_risk_score = (
+                analysis.risk_score
+            )
+
+        else:
+
+            medical_record.ai_risk_score = None
+
+        # -------------------------------------------------
+        # Save recommendations
+        # -------------------------------------------------
+
+        medical_record.ai_recommendation = (
+            "\n".join(
+                analysis.recommendations
+            )
+        )
+
+        # -------------------------------------------------
+        # Commit changes
+        # -------------------------------------------------
 
         db.commit()
 
-        db.refresh(medical_record)
+        db.refresh(
+            medical_record
+        )
 
         return analysis
 
@@ -196,8 +361,6 @@ class AIService:
             cleaned_response = response.strip()
 
             # Remove opening Markdown code fence
-            # Example:
-            # ```json
             cleaned_response = re.sub(
                 r"^```(?:json)?\s*",
                 "",
@@ -206,8 +369,6 @@ class AIService:
             )
 
             # Remove closing Markdown code fence
-            # Example:
-            # ```
             cleaned_response = re.sub(
                 r"\s*```$",
                 "",
