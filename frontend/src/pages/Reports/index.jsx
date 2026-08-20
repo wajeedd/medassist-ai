@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-
+import { generatePatientReport } from "../../utils/generatePatientReport";
 import {
   Users,
   FileText,
@@ -403,7 +403,62 @@ function Reports() {
     return "Low";
 
   };
+  const handleGeneratePDF = async () => {
 
+  if (!selectedPatient) {
+    return;
+  }
+
+  let analysis = longitudinalAnalysis;
+
+  // If longitudinal analysis has not loaded yet,
+  // fetch it before generating the PDF.
+  if (!analysis) {
+
+    try {
+
+      setLoadingAI(true);
+      setAIError("");
+
+      analysis =
+        await getPatientLongitudinalAnalysis(
+          selectedPatient.id
+        );
+
+      setLongitudinalAnalysis(
+        analysis
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Failed to load longitudinal AI analysis for PDF:",
+        error
+      );
+
+      setAIError(
+        "Failed to load longitudinal AI analysis. Please try again."
+      );
+
+      setLoadingAI(false);
+
+      return;
+
+    } finally {
+
+      setLoadingAI(false);
+
+    }
+  }
+
+  // Generate PDF only after AI analysis is available
+  generatePatientReport({
+    patient: selectedPatient,
+    medicalRecords,
+    longitudinalAnalysis: analysis,
+    reportStats,
+  });
+};
 
   // ======================================================
   // AI LIST RENDERER
@@ -618,40 +673,79 @@ function Reports() {
 
           <div className="bg-white rounded-2xl border shadow-sm p-6">
 
-            <div className="flex items-center gap-4">
+  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
 
-              <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold">
+    {/* Patient Information */}
 
-                {selectedPatient.first_name?.charAt(0)}
-                {selectedPatient.last_name?.charAt(0)}
+    <div className="flex items-center gap-4">
 
-              </div>
+      <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold">
 
-              <div>
+        {selectedPatient.first_name?.charAt(0)}
+        {selectedPatient.last_name?.charAt(0)}
 
-                <h2 className="text-2xl font-bold text-slate-800">
+      </div>
 
-                  {selectedPatient.first_name}{" "}
-                  {selectedPatient.last_name}
+      <div>
 
-                </h2>
+        <h2 className="text-2xl font-bold text-slate-800">
 
-                <p className="text-gray-500">
+          {selectedPatient.first_name}{" "}
+          {selectedPatient.last_name}
 
-                  {selectedPatient.gender ||
-                    "Gender not available"}
+        </h2>
 
-                  {selectedPatient.date_of_birth
-                    ? ` • DOB: ${selectedPatient.date_of_birth}`
-                    : ""}
+        <p className="text-gray-500">
 
-                </p>
+          {selectedPatient.gender ||
+            "Gender not available"}
 
-              </div>
+          {selectedPatient.date_of_birth
+            ? ` • DOB: ${selectedPatient.date_of_birth}`
+            : ""}
 
-            </div>
+        </p>
 
-          </div>
+      </div>
+
+    </div>
+
+
+    {/* Generate PDF Button */}
+
+    <button
+  type="button"
+  onClick={handleGeneratePDF}
+  disabled={
+    loadingRecords ||
+    loadingAI ||
+    !medicalRecords.length
+  }
+      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+
+      {loadingAI ? (
+  <>
+    <Loader2
+      size={19}
+      className="animate-spin"
+    />
+
+    Preparing AI Report...
+  </>
+) : (
+  <>
+    <FileText size={19} />
+
+    Generate PDF Report
+  </>
+)}
+
+    </button>
+
+  </div>
+
+</div>
 
 
           {/* ============================================== */}

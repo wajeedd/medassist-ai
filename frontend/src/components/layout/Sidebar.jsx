@@ -8,97 +8,77 @@ import {
   LogOut,
 } from "lucide-react";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
+import { useAuth } from "../../contexts/AuthContext";
 
 function Sidebar() {
 
-  const menu = [
+  const navigate = useNavigate();
 
+  const { logout } = useAuth();
+
+  const menu = [
     {
       name: "Dashboard",
       icon: LayoutDashboard,
       path: "/dashboard",
     },
-
     {
       name: "Patients",
       icon: Users,
       path: "/patients",
     },
-
     {
       name: "Medical Records",
       icon: FileText,
       path: "/medical-records",
     },
-
     {
       name: "AI Analysis",
       icon: Brain,
       path: "/ai-analysis",
     },
-
     {
       name: "Reports",
       icon: FileDown,
       path: "/reports",
     },
-
     {
       name: "Settings",
       icon: Settings,
       path: "/settings",
     },
-
   ];
-
-
-  // ==========================================
-  // LOGOUT
-  // ==========================================
 
   const handleLogout = () => {
 
-    localStorage.removeItem("access_token");
+    logout();
 
-    // Force reload so AuthContext
-    // re-checks authentication state.
-
-    window.location.href = "/login";
-
+    navigate("/login", {
+      replace: true,
+    });
   };
 
-
   return (
-
     <aside className="w-72 bg-slate-900 text-white min-h-screen flex flex-col">
 
-
-      {/* ==========================================
-          LOGO
-      ========================================== */}
+      {/* Logo */}
 
       <div className="text-center py-8">
 
         <h1 className="text-3xl font-bold text-blue-400">
-
           🏥
-
         </h1>
 
         <h2 className="text-xl font-bold mt-2">
-
           MedAssist AI
-
         </h2>
 
       </div>
 
 
-      {/* ==========================================
-          NAVIGATION
-      ========================================== */}
+      {/* Navigation */}
 
       <nav className="flex-1">
 
@@ -107,7 +87,6 @@ function Sidebar() {
           const Icon = item.icon;
 
           return (
-
             <NavLink
               key={item.name}
               to={item.path}
@@ -123,13 +102,10 @@ function Sidebar() {
               <Icon size={20} />
 
               <span>
-
                 {item.name}
-
               </span>
 
             </NavLink>
-
           );
 
         })}
@@ -137,9 +113,7 @@ function Sidebar() {
       </nav>
 
 
-      {/* ==========================================
-          LOGOUT
-      ========================================== */}
+      {/* Logout */}
 
       <button
         type="button"
@@ -150,18 +124,13 @@ function Sidebar() {
         <LogOut size={20} />
 
         <span>
-
           Logout
-
         </span>
 
       </button>
 
-
     </aside>
-
   );
-
 }
 
 export default Sidebar;
