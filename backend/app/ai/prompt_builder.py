@@ -112,17 +112,57 @@ Do not include markdown.
 
 Do not include explanations outside the JSON.
 
+IMPORTANT RISK SCORING RULES
+
+Assess the patient's clinical risk only when sufficient meaningful
+clinical information is available.
+
+Risk score must be between 0 and 100 when the record contains
+enough meaningful clinical information for an assessment.
+
+Risk levels:
+
+0-39   = Low
+40-69  = Moderate
+70-100 = High
+
+If the medical record contains insufficient, missing, corrupted,
+uninterpretable, or non-clinical information such that a reliable
+risk assessment cannot be performed:
+
+- Set "risk_score" to null.
+- Set "risk_level" to "Insufficient Data".
+- Do not treat missing information as Low Risk.
+- Do not invent clinical findings.
+- Explain the documentation/data limitation in the summary.
+
+A risk score of 0 should ONLY be returned when the available
+clinical information genuinely supports a minimal clinical risk.
+Do NOT use 0 as a placeholder for missing data.
+
+IMPORTANT DATA QUALITY RULES
+
+Do not invent symptoms, diagnoses, medications, test results,
+vital signs, or clinical findings.
+
+If fields contain meaningless or uninterpretable text, treat them
+as unavailable clinical information.
+
+Return ONLY valid JSON.
+
+Do not include markdown.
+
 Return this structure exactly:
 
-{{
-    "summary": "",
-    "risk_score": null,
-    "risk_level": "",
-    "possible_conditions": [],
-    "recommended_tests": [],
-    "recommendations": [],
-    "emergency": false
-}}
+{
+"summary":"",
+"risk_score":null,
+"risk_level":"",
+"possible_conditions":[],
+"recommended_tests":[],
+"recommendations":[],
+"emergency":false
+}
 """
 
 
@@ -251,8 +291,28 @@ Determine the overall health trend using one of:
 - Mixed
 - Insufficient Data
 
-Do not consider missing documentation as evidence
-of clinical improvement.
+Base the trend ONLY on clinically meaningful information
+available across the patient's assessable visits.
+
+IMPORTANT:
+
+Do NOT require every medical record to contain complete
+clinical information.
+
+If there are multiple clinically assessable visits,
+determine the trend from those visits even if later
+records contain missing, corrupted, or placeholder data.
+
+Ignore invalid or non-clinical records when determining
+the clinical trend, but mention the documentation gaps
+separately.
+
+Use "Insufficient Data" ONLY when there is not enough
+meaningful clinical information across the available
+records to identify any reasonable health trend.
+
+Do not consider missing documentation as evidence of
+clinical improvement or worsening.
 
 ------------------------------------
 
@@ -278,17 +338,34 @@ from
 
 3. OVERALL RISK LEVEL
 
-Determine the overall risk level using:
+Determine the overall risk level using the clinically
+assessable records and their valid AI risk scores.
 
-- Low
-- Moderate
-- High
-- Insufficient Data
+IMPORTANT:
 
-If there is not enough valid clinical information
-to determine the overall risk, use:
+Do NOT require every medical record to contain a valid
+risk score.
+
+If one or more valid AI risk scores are available, use
+those valid scores to determine the overall risk level.
+
+Ignore null, missing, corrupted, or unassessable records
+when determining the risk level, but mention those
+documentation limitations in the observations when relevant.
+
+Use the following rules:
+
+- Average/overall score 0-39 = Low
+- Average/overall score 40-69 = Moderate
+- Average/overall score 70-100 = High
+
+If there are NO valid AI risk scores and there is also
+insufficient meaningful clinical information to determine
+risk, return:
 
 "Insufficient Data"
+
+Never interpret missing risk scores as zero.
 
 ------------------------------------
 

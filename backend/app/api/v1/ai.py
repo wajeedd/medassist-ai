@@ -6,14 +6,22 @@ from sqlalchemy.orm import Session
 
 from app.ai.gemini_client import gemini_client
 from app.database.session import get_db
-from app.schemas.ai import AIAnalysisResponse
+from app.schemas.ai import (
+    AIAnalysisResponse,
+    LongitudinalAIResponse,
+)
 from app.services.ai_service import AIService
+
 
 router = APIRouter(
     prefix="/ai",
     tags=["AI Analysis"],
 )
 
+
+# =====================================================
+# TEST GEMINI CONNECTION
+# =====================================================
 
 @router.get("/test")
 def test_ai():
@@ -28,6 +36,10 @@ def test_ai():
     }
 
 
+# =====================================================
+# ANALYZE SINGLE MEDICAL RECORD
+# =====================================================
+
 @router.post(
     "/analyze-medical-record/{medical_record_id}",
     response_model=AIAnalysisResponse,
@@ -40,4 +52,23 @@ def analyze_medical_record(
     return AIService.analyze_medical_record(
         db=db,
         medical_record_id=medical_record_id,
+    )
+
+
+# =====================================================
+# ANALYZE COMPLETE PATIENT HISTORY
+# =====================================================
+
+@router.get(
+    "/patient/{patient_id}/longitudinal",
+    response_model=LongitudinalAIResponse,
+)
+def analyze_patient_history(
+    patient_id: UUID,
+    db: Session = Depends(get_db),
+):
+
+    return AIService.analyze_patient_history(
+        db=db,
+        patient_id=patient_id,
     )

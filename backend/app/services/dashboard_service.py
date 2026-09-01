@@ -26,7 +26,6 @@ class DashboardService:
             .scalar()
         ) or 0
 
-
         # ==========================================
         # TOTAL MEDICAL RECORDS
         # ==========================================
@@ -36,9 +35,13 @@ class DashboardService:
             .scalar()
         ) or 0
 
-
         # ==========================================
         # TOTAL AI ANALYSES
+        #
+        # An analysis exists when ai_summary is present.
+        # This includes both:
+        # - Valid risk assessments
+        # - Insufficient Data assessments
         # ==========================================
 
         total_ai_analyses = (
@@ -48,7 +51,6 @@ class DashboardService:
             )
             .count()
         )
-
 
         # ==========================================
         # HIGH RISK
@@ -62,7 +64,6 @@ class DashboardService:
             )
             .count()
         )
-
 
         # ==========================================
         # MODERATE RISK
@@ -78,7 +79,6 @@ class DashboardService:
             .count()
         )
 
-
         # ==========================================
         # LOW RISK
         # ==========================================
@@ -92,9 +92,10 @@ class DashboardService:
             .count()
         )
 
-
         # ==========================================
         # INSUFFICIENT DATA
+        #
+        # AI analysis exists but no valid risk score.
         # ==========================================
 
         insufficient_data_cases = (
@@ -105,7 +106,6 @@ class DashboardService:
             )
             .count()
         )
-
 
         # ==========================================
         # RECENT MEDICAL RECORDS
@@ -128,12 +128,14 @@ class DashboardService:
             .all()
         )
 
-
         recent_records = []
 
         for record, first_name, last_name in records:
 
-            # Determine risk level from score
+            # --------------------------------------
+            # Determine risk level
+            # --------------------------------------
+
             if record.ai_risk_score is None:
 
                 risk_level = "Insufficient Data"
@@ -150,6 +152,9 @@ class DashboardService:
 
                 risk_level = "Low"
 
+            # --------------------------------------
+            # Add recent record
+            # --------------------------------------
 
             recent_records.append(
                 RecentMedicalRecord(
@@ -179,7 +184,6 @@ class DashboardService:
                     ai_risk_level=risk_level,
                 )
             )
-
 
         # ==========================================
         # RETURN DASHBOARD DATA

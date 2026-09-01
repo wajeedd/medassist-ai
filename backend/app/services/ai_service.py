@@ -43,7 +43,6 @@ class AIService:
         response = gemini_client.generate_content(prompt)
 
         try:
-
             cleaned_response = response.strip()
 
             # Remove Markdown code fences if Gemini returns them
@@ -67,7 +66,6 @@ class AIService:
             return AIAnalysisResponse(**data)
 
         except Exception as error:
-
             print(
                 "AI response parsing error:",
                 error,
@@ -93,46 +91,9 @@ class AIService:
         medical_record: MedicalRecord,
     ) -> bool:
 
-        # -------------------------------------------------
-        # Required clinical narrative fields
-        # -------------------------------------------------
-
-        narrative_fields = [
-            medical_record.chief_complaint,
-            medical_record.symptoms,
-            medical_record.diagnosis,
-            medical_record.treatment_plan,
-            medical_record.doctor_notes,
-        ]
-
-        valid_narrative_fields = [
-            str(value).strip()
-            for value in narrative_fields
-            if value is not None
-            and str(value).strip()
-        ]
-
-        # -------------------------------------------------
-        # Vital signs
-        # -------------------------------------------------
-
-        vital_signs = [
-            medical_record.temperature,
-            medical_record.blood_pressure,
-            medical_record.heart_rate,
-            medical_record.respiratory_rate,
-            medical_record.oxygen_saturation,
-        ]
-
-        valid_vital_signs = [
-            value
-            for value in vital_signs
-            if value is not None
-        ]
-
-        # -------------------------------------------------
-        # Detect obvious placeholder text
-        # -------------------------------------------------
+        # =================================================
+        # PLACEHOLDER / INVALID TEXT VALUES
+        # =================================================
 
         placeholder_values = {
             "zxc",
@@ -147,42 +108,84 @@ class AIService:
             "n/a",
             "na",
             "none",
+            "null",
+            "unknown",
+            "-",
+            "--",
+            "...",
         }
 
-        has_placeholder = False
+        # =================================================
+        # CHECK NARRATIVE FIELDS
+        # =================================================
 
-        for value in valid_narrative_fields:
+        narrative_fields = [
+            medical_record.chief_complaint,
+            medical_record.symptoms,
+            medical_record.diagnosis,
+            medical_record.treatment_plan,
+            medical_record.doctor_notes,
+        ]
 
-            normalized = (
-                value.lower()
-                .strip()
-            )
+        meaningful_narrative = []
 
+        for value in narrative_fields:
+
+            if value is None:
+                continue
+
+            text = str(value).strip()
+
+            if not text:
+                continue
+
+            normalized = text.lower()
+
+            # Ignore known placeholder values
             if normalized in placeholder_values:
-                has_placeholder = True
-                break
+                continue
 
-        # -------------------------------------------------
-        # Clinical data is insufficient when:
-        #
-        # 1. No meaningful narrative AND
-        # 2. No vital signs
-        #
-        # OR obvious placeholder-only documentation exists.
-        # -------------------------------------------------
+            meaningful_narrative.append(text)
+
+        # =================================================
+        # CHECK VITAL SIGNS
+        # =================================================
+
+        vital_signs = [
+            medical_record.temperature,
+            medical_record.blood_pressure,
+            medical_record.heart_rate,
+            medical_record.respiratory_rate,
+            medical_record.oxygen_saturation,
+        ]
+
+        valid_vitals = []
+
+        for value in vital_signs:
+
+            if value is None:
+                continue
+
+            text = str(value).strip()
+
+            if not text:
+                continue
+
+            valid_vitals.append(value)
+
+        # =================================================
+        # NO MEANINGFUL CLINICAL DATA
+        # =================================================
 
         if (
-            not valid_narrative_fields
-            and not valid_vital_signs
+            not meaningful_narrative
+            and not valid_vitals
         ):
             return False
 
-        if (
-            has_placeholder
-            and not valid_vital_signs
-            and len(valid_narrative_fields) <= 1
-        ):
-            return False
+        # =================================================
+        # MEANINGFUL CLINICAL INFORMATION EXISTS
+        # =================================================
 
         return True
 
@@ -197,6 +200,10 @@ class AIService:
         medical_record_id: UUID,
     ) -> AIAnalysisResponse:
 
+        # =================================================
+        # GET MEDICAL RECORD
+        # =================================================
+
         medical_record = MedicalRecordRepository.get_by_id(
             db=db,
             medical_record_id=medical_record_id,
@@ -208,6 +215,10 @@ class AIService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Medical record not found.",
             )
+
+        # =================================================
+        # GET PATIENT
+        # =================================================
 
         patient = PatientRepository.get_by_id(
             db=db,
@@ -221,40 +232,39 @@ class AIService:
                 detail="Patient not found.",
             )
 
-        # -------------------------------------------------
-        # Generate AI analysis
-        # -------------------------------------------------
+        # =================================================
+        # CHECK CLINICAL DATA BEFORE AI ANALYSIS
+        # =================================================
+
+        sufficient_data = AIService.has_sufficient_clinical_data(
+            medical_record
+        )
+
+        # =================================================
+        # GENERATE AI ANALYSIS
+        # =================================================
 
         analysis = AIService.analyze(
             patient,
             medical_record,
         )
 
-        # -------------------------------------------------
-        # Check clinical data quality
-        # -------------------------------------------------
+        # =================================================
+        # SAVE AI SUMMARY
+        # =================================================
 
-        sufficient_data = (
-            AIService.has_sufficient_clinical_data(
-                medical_record
-            )
-        )
+        medical_record.ai_summary = analysis.summary
 
-        # -------------------------------------------------
-        # Save AI summary
-        # -------------------------------------------------
-
-        medical_record.ai_summary = (
-            analysis.summary
-        )
-
-        # -------------------------------------------------
-        # Save risk score
+        # =================================================
+        # SAVE RISK SCORE
         #
-        # If the record does not contain enough clinical
-        # information, do NOT save AI's 0 as a genuine
-        # low-risk score.
-        # -------------------------------------------------
+        # IMPORTANT:
+        #
+        # Insufficient clinical data = NULL
+        #
+        # Never save 0 as a placeholder for
+        # insufficient information.
+        # =================================================
 
         if sufficient_data:
 
@@ -266,9 +276,9 @@ class AIService:
 
             medical_record.ai_risk_score = None
 
-        # -------------------------------------------------
-        # Save recommendations
-        # -------------------------------------------------
+        # =================================================
+        # SAVE RECOMMENDATIONS
+        # =================================================
 
         medical_record.ai_recommendation = (
             "\n".join(
@@ -276,9 +286,9 @@ class AIService:
             )
         )
 
-        # -------------------------------------------------
-        # Commit changes
-        # -------------------------------------------------
+        # =================================================
+        # SAVE CHANGES
+        # =================================================
 
         db.commit()
 
@@ -299,9 +309,9 @@ class AIService:
         patient_id: UUID,
     ) -> LongitudinalAIResponse:
 
-        # -----------------------------------------
-        # Get patient
-        # -----------------------------------------
+        # =================================================
+        # GET PATIENT
+        # =================================================
 
         patient = PatientRepository.get_by_id(
             db=db,
@@ -315,18 +325,18 @@ class AIService:
                 detail="Patient not found.",
             )
 
-        # -----------------------------------------
-        # Get all medical records
-        # -----------------------------------------
+        # =================================================
+        # GET ALL MEDICAL RECORDS
+        # =================================================
 
         records = MedicalRecordRepository.get_by_patient(
             db=db,
             patient_id=patient_id,
         )
 
-        # -----------------------------------------
-        # Validate medical history
-        # -----------------------------------------
+        # =================================================
+        # VALIDATE MEDICAL HISTORY
+        # =================================================
 
         if not records:
 
@@ -335,26 +345,26 @@ class AIService:
                 detail="No medical records found for this patient.",
             )
 
-        # -----------------------------------------
-        # Build longitudinal AI prompt
-        # -----------------------------------------
+        # =================================================
+        # BUILD LONGITUDINAL PROMPT
+        # =================================================
 
         prompt = build_longitudinal_prompt(
             patient=patient,
             records=records,
         )
 
-        # -----------------------------------------
-        # Generate AI response
-        # -----------------------------------------
+        # =================================================
+        # GENERATE AI RESPONSE
+        # =================================================
 
         response = gemini_client.generate_content(
             prompt
         )
 
-        # -----------------------------------------
-        # Parse AI JSON response
-        # -----------------------------------------
+        # =================================================
+        # PARSE AI JSON RESPONSE
+        # =================================================
 
         try:
 

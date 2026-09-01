@@ -1,8 +1,6 @@
 from pydantic import BaseModel
 
 
-
-
 # -----------------------------------------
 # Longitudinal Patient AI Analysis
 # -----------------------------------------
@@ -15,7 +13,7 @@ class LongitudinalAIResponse(BaseModel):
 
     overall_risk_level: str
 
-    average_risk_score: float
+    average_risk_score: float | None
 
     key_observations: list[str]
 
@@ -28,10 +26,16 @@ class LongitudinalAIResponse(BaseModel):
     follow_up_recommendations: list[str]
 
 
+# -----------------------------------------
+# Single Medical Record AI Analysis
+# -----------------------------------------
+
 class AIAnalysisResponse(BaseModel):
+
     summary: str
 
     risk_score: int | None
+
     risk_level: str
 
     possible_conditions: list[str]
