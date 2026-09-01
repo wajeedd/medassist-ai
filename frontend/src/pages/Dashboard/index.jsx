@@ -575,18 +575,15 @@ function Dashboard() {
                 <span className="text-sm font-semibold text-green-600">
 
                   {
-                    stats.total_medical_records > 0
-                      ? Math.round(
-                          (
-                            (
-                              stats.total_medical_records -
-                              stats.insufficient_data_cases
-                            ) /
-                            stats.total_medical_records
-                          ) * 100
-                        )
-                      : 0
-                  }%
+  stats.total_medical_records > 0
+    ? Math.round(
+        (
+          stats.total_ai_analyses /
+          stats.total_medical_records
+        ) * 100
+      )
+    : 0
+}%
 
                 </span>
 
@@ -598,19 +595,16 @@ function Dashboard() {
                   className="h-full bg-green-500 rounded-full transition-all"
                   style={{
                     width: `${
-                      stats.total_medical_records > 0
-                        ? Math.min(
-                            100,
-                            (
-                              (
-                                stats.total_medical_records -
-                                stats.insufficient_data_cases
-                              ) /
-                              stats.total_medical_records
-                            ) * 100
-                          )
-                        : 0
-                    }%`,
+  stats.total_medical_records > 0
+    ? Math.min(
+        100,
+        (
+          stats.total_ai_analyses /
+          stats.total_medical_records
+        ) * 100
+      )
+    : 0
+}%`,
                   }}
                 />
 
