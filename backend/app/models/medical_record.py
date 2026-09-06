@@ -154,6 +154,10 @@ class MedicalRecord(Base):
         Text,
         nullable=True,
     )
+    ai_analyzed_at: Mapped[Optional[datetime]] = mapped_column(
+    DateTime(timezone=True),
+    nullable=True,
+)
 
     # -------------------------
     # Audit Information

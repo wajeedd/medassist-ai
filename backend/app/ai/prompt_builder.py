@@ -154,7 +154,7 @@ Do not include markdown.
 
 Return this structure exactly:
 
-{
+{{
 "summary":"",
 "risk_score":null,
 "risk_level":"",
@@ -162,7 +162,7 @@ Return this structure exactly:
 "recommended_tests":[],
 "recommendations":[],
 "emergency":false
-}
+}}
 """
 
 

@@ -103,11 +103,23 @@ class MedicalRecordService:
                 detail="Medical record not found",
             )
 
-        return MedicalRecordRepository.update(
+        # Update the medical record
+        record = MedicalRecordRepository.update(
             db,
             record,
             data,
         )
+
+        # Re-run AI analysis using the updated medical record
+        AIService.analyze_medical_record(
+            db=db,
+            medical_record_id=record.id,
+        )
+
+        # Reload record to get the updated AI fields
+        db.refresh(record)
+
+        return record
 
     @staticmethod
     def delete_medical_record(

@@ -92,6 +92,7 @@ class MedicalRecordResponse(BaseModel):
     ai_summary: Optional[str]
     ai_risk_score: Optional[float]
     ai_recommendation: Optional[str]
+    ai_analyzed_at: Optional[datetime]
 
     created_at: datetime
     updated_at: datetime

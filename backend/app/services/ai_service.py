@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -284,6 +285,17 @@ class AIService:
             "\n".join(
                 analysis.recommendations
             )
+        )
+
+        # =================================================
+        # SAVE AI ANALYSIS TIMESTAMP
+        #
+        # Updated only after successful AI generation
+        # and validation.
+        # =================================================
+
+        medical_record.ai_analyzed_at = datetime.now(
+            timezone.utc
         )
 
         # =================================================
