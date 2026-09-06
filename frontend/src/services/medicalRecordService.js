@@ -1,19 +1,37 @@
 import api from "./api";
 
-// Get all medical records
+
+// =========================================================
+// GET ALL MEDICAL RECORDS
+// =========================================================
+
 export const getMedicalRecords = async () => {
   const response = await api.get("/medical-records");
+
   return response.data;
 };
 
-// Get single medical record
+
+// =========================================================
+// GET SINGLE MEDICAL RECORD
+// =========================================================
+
 export const getMedicalRecord = async (id) => {
-  const response = await api.get(`/medical-records/${id}`);
+  const response = await api.get(
+    `/medical-records/${id}`
+  );
+
   return response.data;
 };
 
-// Get records for a specific patient
-export const getPatientMedicalRecords = async (patientId) => {
+
+// =========================================================
+// GET RECORDS FOR A SPECIFIC PATIENT
+// =========================================================
+
+export const getPatientMedicalRecords = async (
+  patientId
+) => {
   const response = await api.get(
     `/medical-records/patient/${patientId}`
   );
@@ -21,8 +39,14 @@ export const getPatientMedicalRecords = async (patientId) => {
   return response.data;
 };
 
-// Get AI-powered longitudinal analysis for a patient
-export const getPatientLongitudinalAnalysis = async (patientId) => {
+
+// =========================================================
+// GET AI LONGITUDINAL ANALYSIS
+// =========================================================
+
+export const getPatientLongitudinalAnalysis = async (
+  patientId
+) => {
   const response = await api.get(
     `/medical-records/patient/${patientId}/longitudinal-analysis`
   );
@@ -30,7 +54,11 @@ export const getPatientLongitudinalAnalysis = async (patientId) => {
   return response.data;
 };
 
-// Create medical record
+
+// =========================================================
+// CREATE MEDICAL RECORD
+// =========================================================
+
 export const createMedicalRecord = async (data) => {
   const response = await api.post(
     "/medical-records",
@@ -40,8 +68,15 @@ export const createMedicalRecord = async (data) => {
   return response.data;
 };
 
-// Update medical record
-export const updateMedicalRecord = async (id, data) => {
+
+// =========================================================
+// UPDATE MEDICAL RECORD
+// =========================================================
+
+export const updateMedicalRecord = async (
+  id,
+  data
+) => {
   const response = await api.put(
     `/medical-records/${id}`,
     data
@@ -50,10 +85,27 @@ export const updateMedicalRecord = async (id, data) => {
   return response.data;
 };
 
-// Delete medical record
+
+// =========================================================
+// DELETE MEDICAL RECORD
+// =========================================================
+
 export const deleteMedicalRecord = async (id) => {
   const response = await api.delete(
     `/medical-records/${id}`
+  );
+
+  return response.data;
+};
+
+
+// =========================================================
+// ANALYZE SINGLE MEDICAL RECORD WITH AI
+// =========================================================
+
+export const analyzeMedicalRecord = async (id) => {
+  const response = await api.post(
+    `/medical-records/${id}/analyze`
   );
 
   return response.data;

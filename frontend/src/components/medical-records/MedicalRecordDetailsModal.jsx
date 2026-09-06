@@ -1,19 +1,43 @@
+import {
+  Sparkles,
+  RefreshCw,
+  Loader2,
+} from "lucide-react";
+
 import AnimatedModal from "../common/AnimatedModal";
+
 
 function MedicalRecordDetailsModal({
   record,
   patient,
   isOpen,
   onClose,
+  onAnalyze,
+  aiAnalyzing = false,
 }) {
+
   if (!record) {
     return null;
   }
 
-  const riskScore = record.ai_risk_score;
+
+  const riskScore =
+    record.ai_risk_score;
+
+
+  const hasAIAnalysis =
+    !!record.ai_summary ||
+    record.ai_risk_score !== null &&
+    record.ai_risk_score !== undefined ||
+    !!record.ai_recommendation;
+
 
   const getRiskStyle = (score) => {
-    if (score === null || score === undefined) {
+
+    if (
+      score === null ||
+      score === undefined
+    ) {
       return "bg-gray-100 text-gray-700";
     }
 
@@ -26,10 +50,16 @@ function MedicalRecordDetailsModal({
     }
 
     return "bg-green-100 text-green-700";
+
   };
 
+
   const getRiskLabel = (score) => {
-    if (score === null || score === undefined) {
+
+    if (
+      score === null ||
+      score === undefined
+    ) {
       return "Not Available";
     }
 
@@ -42,7 +72,9 @@ function MedicalRecordDetailsModal({
     }
 
     return "Low Risk";
+
   };
+
 
   return (
     <AnimatedModal
@@ -50,36 +82,50 @@ function MedicalRecordDetailsModal({
       onClose={onClose}
       title="Medical Record Details"
     >
+
       <div className="space-y-6">
+
 
         {/* ========================= */}
         {/* Patient Information */}
         {/* ========================= */}
 
         <section>
+
           <h3 className="text-lg font-semibold text-slate-800 mb-3">
             Patient Information
           </h3>
 
           <div className="bg-slate-50 rounded-xl p-4">
+
             {patient ? (
+
               <>
+
                 <p className="font-semibold text-slate-800">
-                  {patient.first_name} {patient.last_name}
+                  {patient.first_name}{" "}
+                  {patient.last_name}
                 </p>
 
                 <p className="text-sm text-gray-500 mt-1">
-                  {patient.phone || "No phone number"}
+                  {patient.phone ||
+                    "No phone number"}
                 </p>
 
                 {patient.email && (
+
                   <p className="text-sm text-gray-500">
                     {patient.email}
                   </p>
+
                 )}
+
               </>
+
             ) : (
+
               <>
+
                 <p className="font-semibold text-slate-800">
                   Patient
                 </p>
@@ -87,16 +133,22 @@ function MedicalRecordDetailsModal({
                 <p className="text-xs text-gray-500 mt-1 break-all">
                   {record.patient_id}
                 </p>
+
               </>
+
             )}
+
           </div>
+
         </section>
+
 
         {/* ========================= */}
         {/* Visit Information */}
         {/* ========================= */}
 
         <section>
+
           <h3 className="text-lg font-semibold text-slate-800 mb-3">
             Visit Information
           </h3>
@@ -115,22 +167,30 @@ function MedicalRecordDetailsModal({
 
             <InfoItem
               label="Chief Complaint"
-              value={record.chief_complaint}
+              value={
+                record.chief_complaint
+              }
             />
 
             <InfoItem
               label="Follow-up Date"
-              value={record.follow_up_date || "Not scheduled"}
+              value={
+                record.follow_up_date ||
+                "Not scheduled"
+              }
             />
 
           </div>
+
         </section>
+
 
         {/* ========================= */}
         {/* Clinical Information */}
         {/* ========================= */}
 
         <section>
+
           <h3 className="text-lg font-semibold text-slate-800 mb-3">
             Clinical Information
           </h3>
@@ -149,22 +209,29 @@ function MedicalRecordDetailsModal({
 
             <TextBlock
               label="Treatment Plan"
-              value={record.treatment_plan}
+              value={
+                record.treatment_plan
+              }
             />
 
             <TextBlock
               label="Doctor Notes"
-              value={record.doctor_notes}
+              value={
+                record.doctor_notes
+              }
             />
 
           </div>
+
         </section>
+
 
         {/* ========================= */}
         {/* Vital Signs */}
         {/* ========================= */}
 
         <section>
+
           <h3 className="text-lg font-semibold text-slate-800 mb-3">
             Vital Signs
           </h3>
@@ -183,7 +250,10 @@ function MedicalRecordDetailsModal({
 
             <InfoItem
               label="Blood Pressure"
-              value={record.blood_pressure || "N/A"}
+              value={
+                record.blood_pressure ||
+                "N/A"
+              }
             />
 
             <InfoItem
@@ -217,65 +287,180 @@ function MedicalRecordDetailsModal({
             />
 
           </div>
+
         </section>
+
 
         {/* ========================= */}
         {/* Prescription */}
         {/* ========================= */}
 
         <section>
+
           <h3 className="text-lg font-semibold text-slate-800 mb-3">
             Prescription
           </h3>
 
           <div className="bg-blue-50 rounded-xl p-4">
+
             <p className="text-slate-700 whitespace-pre-line">
-              {record.prescription || "No prescription recorded."}
+              {record.prescription ||
+                "No prescription recorded."}
             </p>
+
           </div>
+
         </section>
+
 
         {/* ========================= */}
         {/* AI Analysis */}
         {/* ========================= */}
 
         <section>
-          <h3 className="text-lg font-semibold text-slate-800 mb-3">
-            AI Clinical Analysis
-          </h3>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+
+            <div>
+
+              <h3 className="text-lg font-semibold text-slate-800">
+                AI Clinical Analysis
+              </h3>
+
+              <p className="text-sm text-gray-500 mt-1">
+                AI-generated clinical decision support
+                based on this medical record.
+              </p>
+
+            </div>
+
+
+            {/* ========================= */}
+            {/* AI Analyze Button */}
+            {/* ========================= */}
+
+            {onAnalyze && (
+
+              <button
+                type="button"
+                onClick={onAnalyze}
+                disabled={aiAnalyzing}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white text-sm font-semibold transition"
+              >
+
+                {aiAnalyzing ? (
+
+                  <>
+                    <Loader2
+                      size={17}
+                      className="animate-spin"
+                    />
+
+                    Analyzing...
+
+                  </>
+
+                ) : hasAIAnalysis ? (
+
+                  <>
+                    <RefreshCw size={17} />
+
+                    Re-analyze with AI
+
+                  </>
+
+                ) : (
+
+                  <>
+                    <Sparkles size={17} />
+
+                    Analyze with AI
+
+                  </>
+
+                )}
+
+              </button>
+
+            )}
+
+          </div>
+
 
           <div className="space-y-4">
+  {/* AI Analysis Status */}
+  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <p className="text-sm font-semibold text-blue-800">
+          AI Analysis Status
+        </p>
 
+        <p className="text-sm text-blue-700 mt-1">
+          {record.ai_analyzed_at
+            ? `Last analyzed on ${formatDateTime(
+                record.ai_analyzed_at
+              )}`
+            : "This record has not been analyzed by AI yet."}
+        </p>
+      </div>
+
+      <Sparkles
+        size={22}
+        className="text-blue-600 shrink-0"
+      />
+    </div>
+  </div>
+
+  {/* Risk */}
+
+
+            {/* ========================= */}
             {/* Risk */}
+            {/* ========================= */}
 
             <div className="bg-slate-50 rounded-xl p-4">
+
               <div className="flex items-center justify-between">
 
                 <div>
+
                   <p className="text-sm text-gray-500">
                     AI Risk Score
                   </p>
 
                   <p className="text-2xl font-bold text-slate-800 mt-1">
+
                     {riskScore !== null &&
                     riskScore !== undefined
                       ? `${riskScore}%`
                       : "N/A"}
+
                   </p>
+
                 </div>
+
 
                 <span
                   className={`px-4 py-2 rounded-full text-sm font-semibold ${getRiskStyle(
                     riskScore
                   )}`}
                 >
-                  {getRiskLabel(riskScore)}
+
+                  {getRiskLabel(
+                    riskScore
+                  )}
+
                 </span>
 
               </div>
+
             </div>
 
+
+            {/* ========================= */}
             {/* Summary */}
+            {/* ========================= */}
 
             <TextBlock
               label="AI Summary"
@@ -285,7 +470,10 @@ function MedicalRecordDetailsModal({
               }
             />
 
+
+            {/* ========================= */}
             {/* Recommendations */}
+            {/* ========================= */}
 
             <TextBlock
               label="AI Recommendations"
@@ -296,42 +484,65 @@ function MedicalRecordDetailsModal({
             />
 
           </div>
+
         </section>
+
 
         {/* ========================= */}
         {/* Record Information */}
         {/* ========================= */}
 
-        <section className="border-t pt-4">
+        {/* Record Information */}
+<section className="border-t pt-4">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <InfoItem
+      label="Created At"
+      value={formatDateTime(
+        record.created_at
+      )}
+    />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <InfoItem
+      label="Last Updated"
+      value={formatDateTime(
+        record.updated_at
+      )}
+    />
 
-            <InfoItem
-              label="Created At"
-              value={formatDateTime(record.created_at)}
-            />
+    <InfoItem
+      label="AI Last Analyzed"
+      value={
+        record.ai_analyzed_at
+          ? formatDateTime(
+              record.ai_analyzed_at
+            )
+          : "Not analyzed yet"
+      }
+    />
+  </div>
+</section>
 
-            <InfoItem
-              label="Last Updated"
-              value={formatDateTime(record.updated_at)}
-            />
-
-          </div>
-
-        </section>
 
       </div>
+
     </AnimatedModal>
   );
 }
+
 
 /* ========================= */
 /* Helper Components */
 /* ========================= */
 
-function InfoItem({ label, value }) {
+function InfoItem({
+  label,
+  value,
+}) {
+
   return (
+
     <div className="bg-slate-50 rounded-xl p-4">
+
       <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
         {label}
       </p>
@@ -339,32 +550,52 @@ function InfoItem({ label, value }) {
       <p className="text-sm font-medium text-slate-800 mt-1 break-words">
         {value || "N/A"}
       </p>
+
     </div>
+
   );
 }
 
-function TextBlock({ label, value }) {
+
+function TextBlock({
+  label,
+  value,
+}) {
+
   return (
+
     <div>
+
       <p className="text-sm font-semibold text-slate-700 mb-1">
         {label}
       </p>
 
       <div className="bg-slate-50 rounded-xl p-4">
+
         <p className="text-sm text-slate-600 whitespace-pre-line">
           {value || "Not available."}
         </p>
+
       </div>
+
     </div>
+
   );
+
 }
 
+
 function formatDateTime(value) {
+
   if (!value) {
     return "N/A";
   }
 
-  return new Date(value).toLocaleString();
+  return new Date(
+    value
+  ).toLocaleString();
+
 }
+
 
 export default MedicalRecordDetailsModal;

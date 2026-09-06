@@ -25,8 +25,6 @@ import {
   Gauge,
   CalendarDays,
   TrendingUp,
-  TrendingDown,
-  Minus,
   Brain,
   History,
   ArrowUpRight,
@@ -55,40 +53,10 @@ function InfoCard({ icon, title, value }) {
       </div>
 
       <p className="text-slate-700 break-words">
-        {value !== null &&
-        value !== undefined &&
-        String(value).trim() !== ""
-          ? value
-          : "-"}
+        {value || "-"}
       </p>
     </div>
   );
-}
-
-// ======================================================
-// RISK SCORE NORMALIZER
-// ======================================================
-
-function normalizeRiskScore(score) {
-  if (
-    score === null ||
-    score === undefined ||
-    score === ""
-  ) {
-    return null;
-  }
-
-  const numericScore = Number(score);
-
-  if (
-    !Number.isFinite(numericScore) ||
-    numericScore < 0 ||
-    numericScore > 100
-  ) {
-    return null;
-  }
-
-  return numericScore;
 }
 
 // ======================================================
@@ -96,238 +64,19 @@ function normalizeRiskScore(score) {
 // ======================================================
 
 function getRiskStyle(score) {
-  const numericScore = normalizeRiskScore(score);
-
-  if (numericScore === null) {
+  if (score === null || score === undefined) {
     return "bg-gray-100 text-gray-600";
   }
 
-  if (numericScore >= 70) {
+  if (score >= 70) {
     return "bg-red-100 text-red-700";
   }
 
-  if (numericScore >= 40) {
+  if (score >= 40) {
     return "bg-orange-100 text-orange-700";
   }
 
   return "bg-green-100 text-green-700";
-}
-
-// ======================================================
-// RISK LABEL
-// ======================================================
-
-function getRiskLabel(score) {
-  const numericScore = normalizeRiskScore(score);
-
-  if (numericScore === null) {
-    return "Insufficient Data";
-  }
-
-  if (numericScore >= 70) {
-    return "High Risk";
-  }
-
-  if (numericScore >= 40) {
-    return "Moderate Risk";
-  }
-
-  return "Low Risk";
-}
-
-// ======================================================
-// OVERALL RISK DISPLAY
-// ======================================================
-
-function getOverallRiskDisplay(riskLevel) {
-  const normalizedLevel =
-    typeof riskLevel === "string"
-      ? riskLevel.trim().toLowerCase()
-      : "";
-
-  switch (normalizedLevel) {
-    case "low":
-      return {
-        bg: "bg-green-50",
-        text: "text-green-700",
-        icon: "text-green-600",
-      };
-
-    case "moderate":
-      return {
-        bg: "bg-orange-50",
-        text: "text-orange-700",
-        icon: "text-orange-600",
-      };
-
-    case "high":
-      return {
-        bg: "bg-red-50",
-        text: "text-red-700",
-        icon: "text-red-600",
-      };
-
-    default:
-      return {
-        bg: "bg-gray-50",
-        text: "text-gray-600",
-        icon: "text-gray-500",
-      };
-  }
-}
-
-// ======================================================
-// HEALTH TREND DISPLAY
-// ======================================================
-
-function getTrendDisplay(trend) {
-  const normalizedTrend =
-    typeof trend === "string"
-      ? trend.trim().toLowerCase()
-      : "";
-
-  switch (normalizedTrend) {
-    case "improving":
-      return {
-        icon: (
-          <TrendingUp
-            size={20}
-            className="text-green-600"
-          />
-        ),
-        bg: "bg-green-50",
-        text: "text-green-700",
-      };
-
-    case "worsening":
-      return {
-        icon: (
-          <TrendingDown
-            size={20}
-            className="text-red-600"
-          />
-        ),
-        bg: "bg-red-50",
-        text: "text-red-700",
-      };
-
-    case "stable":
-      return {
-        icon: (
-          <Minus
-            size={20}
-            className="text-blue-600"
-          />
-        ),
-        bg: "bg-blue-50",
-        text: "text-blue-700",
-      };
-
-    case "mixed":
-      return {
-        icon: (
-          <Activity
-            size={20}
-            className="text-orange-600"
-          />
-        ),
-        bg: "bg-orange-50",
-        text: "text-orange-700",
-      };
-
-    default:
-      return {
-        icon: (
-          <Minus
-            size={20}
-            className="text-gray-500"
-          />
-        ),
-        bg: "bg-gray-50",
-        text: "text-gray-600",
-      };
-  }
-}
-
-// ======================================================
-// TEXT VALIDATION
-// ======================================================
-
-function isMeaningfulText(value) {
-  if (
-    value === null ||
-    value === undefined ||
-    typeof value !== "string"
-  ) {
-    return false;
-  }
-
-  const text = value.trim();
-
-  if (!text) {
-    return false;
-  }
-
-  const invalidValues = [
-    "n/a",
-    "na",
-    "none",
-    "null",
-    "undefined",
-    "unknown",
-    "not available",
-    "not recorded",
-    "test",
-    "testing",
-    "asdf",
-    "qwerty",
-    "xxx",
-    "placeholder",
-  ];
-
-  if (invalidValues.includes(text.toLowerCase())) {
-    return false;
-  }
-
-  return text.length >= 3;
-}
-
-// ======================================================
-// CLINICAL RECORD VALIDATION
-// ======================================================
-//
-// Used only for determining which record should be used
-// as the "latest clinically usable record" for the health
-// overview.
-//
-// Invalid/corrupted records are NOT removed from the
-// Medical History section.
-// ======================================================
-
-function isClinicallyUsableRecord(record) {
-  if (!record) {
-    return false;
-  }
-
-  const riskScore = normalizeRiskScore(
-    record.ai_risk_score
-  );
-
-  if (riskScore !== null) {
-    return true;
-  }
-
-  const clinicalTextFields = [
-    record.chief_complaint,
-    record.symptoms,
-    record.diagnosis,
-    record.treatment_plan,
-    record.doctor_notes,
-    record.ai_summary,
-    record.ai_recommendation,
-  ];
-
-  return clinicalTextFields.some(isMeaningfulText);
 }
 
 // ======================================================
@@ -358,11 +107,7 @@ function HealthStatCard({
 
       <div className="flex items-baseline gap-1">
         <span className="text-2xl font-bold text-slate-800">
-          {value !== null &&
-          value !== undefined &&
-          value !== ""
-            ? value
-            : "-"}
+          {value ?? "-"}
         </span>
 
         {unit && (
@@ -382,14 +127,131 @@ function HealthStatCard({
 }
 
 // ======================================================
+// CHECK WHETHER TEXT IS MEANINGFUL
+// ======================================================
+
+function hasMeaningfulText(value) {
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const text = value.trim();
+
+  if (!text) {
+    return false;
+  }
+
+  /*
+   * Very short entries are generally not enough to establish
+   * meaningful clinical documentation.
+   */
+  if (text.length < 8) {
+    return false;
+  }
+
+  /*
+   * Reject obvious repeated-character / placeholder-style text.
+   * This is intentionally conservative and is NOT intended to
+   * perform medical diagnosis or clinical validation.
+   */
+  const repeatedPattern =
+    /(.)\1{3,}/i;
+
+  if (repeatedPattern.test(text)) {
+    return false;
+  }
+
+  /*
+   * Reject common obvious placeholder / test entries.
+   */
+  const placeholderPattern =
+    /^(test|testing|dummy|sample|asdf|qwer|qwerty|zxc|xxx|abc|abcd|random|none|na|n\/a)$/i;
+
+  if (placeholderPattern.test(text)) {
+    return false;
+  }
+
+  return true;
+}
+
+// ======================================================
+// DETERMINE WHETHER A MEDICAL RECORD IS CLINICALLY USABLE
+// ======================================================
+
+function isClinicallyUsableRecord(record) {
+  if (!record) {
+    return false;
+  }
+
+  /*
+   * If an AI risk score exists, the record has already passed
+   * the backend AI's minimum clinical-assessment requirements.
+   */
+  if (
+    typeof record.ai_risk_score === "number" &&
+    Number.isFinite(record.ai_risk_score)
+  ) {
+    return true;
+  }
+
+  /*
+   * If the AI summary explicitly states that the record is
+   * uninterpretable or insufficient, treat it as unusable.
+   */
+  const aiSummary =
+    typeof record.ai_summary === "string"
+      ? record.ai_summary.toLowerCase()
+      : "";
+
+  const invalidIndicators = [
+    "uninterpretable",
+    "insufficient data",
+    "insufficient clinical",
+    "non-clinical",
+    "non clinical",
+    "corrupted",
+    "incomplete data",
+    "incomplete clinical",
+    "clinical assessment is limited",
+    "cannot be reliably assessed",
+    "unable to assess",
+  ];
+
+  if (
+    invalidIndicators.some((indicator) =>
+      aiSummary.includes(indicator)
+    )
+  ) {
+    return false;
+  }
+
+  /*
+   * Count meaningful clinical text fields.
+   */
+  const meaningfulTextFields = [
+    record.chief_complaint,
+    record.symptoms,
+    record.diagnosis,
+    record.treatment_plan,
+    record.doctor_notes,
+  ].filter(hasMeaningfulText);
+
+  /*
+   * A record with at least two meaningful clinical text sections
+   * is considered usable for the frontend overview.
+   */
+  if (meaningfulTextFields.length >= 2) {
+    return true;
+  }
+
+  return false;
+}
+
+// ======================================================
 // MEDICAL HISTORY CARD
 // ======================================================
 
 function MedicalHistoryCard({ record, onView }) {
-  const riskScore = normalizeRiskScore(
-    record.ai_risk_score
-  );
-
   return (
     <div className="border rounded-2xl p-5 bg-white shadow-sm">
 
@@ -421,9 +283,7 @@ function MedicalHistoryCard({ record, onView }) {
             <p className="text-sm text-gray-500">
 
               {record.visit_date
-                ? new Date(
-                    record.visit_date
-                  ).toLocaleDateString(
+                ? new Date(record.visit_date).toLocaleDateString(
                     "en-IN",
                     {
                       day: "2-digit",
@@ -441,17 +301,49 @@ function MedicalHistoryCard({ record, onView }) {
 
         <span
           className={`px-3 py-1 rounded-full text-sm font-semibold w-fit ${getRiskStyle(
-            riskScore
+            record.ai_risk_score
           )}`}
         >
 
-          {riskScore !== null
-            ? `${riskScore}% Risk`
+          {record.ai_risk_score !== null &&
+          record.ai_risk_score !== undefined
+            ? `${record.ai_risk_score}% Risk`
             : "Risk N/A"}
 
         </span>
 
       </div>
+
+      {/* Data Quality Warning */}
+
+      {!isClinicallyUsableRecord(record) && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+
+          <div className="flex items-start gap-2">
+
+            <AlertTriangle
+              size={18}
+              className="text-amber-600 mt-0.5 flex-shrink-0"
+            />
+
+            <div>
+
+              <p className="text-sm font-semibold text-amber-800">
+                Insufficient Clinical Documentation
+              </p>
+
+              <p className="text-xs text-amber-700 mt-1">
+                This record contains insufficient or
+                uninterpretable clinical information for a
+                reliable clinical assessment.
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
       {/* Chief Complaint */}
 
@@ -462,8 +354,7 @@ function MedicalHistoryCard({ record, onView }) {
         </p>
 
         <p className="text-slate-700">
-          {record.chief_complaint ||
-            "Not recorded"}
+          {record.chief_complaint || "Not recorded"}
         </p>
 
       </div>
@@ -477,8 +368,7 @@ function MedicalHistoryCard({ record, onView }) {
         </p>
 
         <p className="text-slate-700">
-          {record.diagnosis ||
-            "Not recorded"}
+          {record.diagnosis || "Not recorded"}
         </p>
 
       </div>
@@ -646,14 +536,11 @@ function PatientDetailsModal({
   onClose,
 }) {
 
-  const [medicalRecords, setMedicalRecords] =
-    useState([]);
+  const [medicalRecords, setMedicalRecords] = useState([]);
 
-  const [historyLoading, setHistoryLoading] =
-    useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
-  const [historyError, setHistoryError] =
-    useState("");
+  const [historyError, setHistoryError] = useState("");
 
   const [longitudinalAnalysis, setLongitudinalAnalysis] =
     useState(null);
@@ -684,17 +571,15 @@ function PatientDetailsModal({
         setHistoryLoading(true);
         setHistoryError("");
 
-        const data =
-          await getPatientMedicalRecords(
-            patient.id
-          );
+        const data = await getPatientMedicalRecords(
+          patient.id
+        );
 
-        const sortedRecords =
-          (data || []).sort(
-            (a, b) =>
-              new Date(b.visit_date) -
-              new Date(a.visit_date)
-          );
+        const sortedRecords = (data || []).sort(
+          (a, b) =>
+            new Date(b.visit_date) -
+            new Date(a.visit_date)
+        );
 
         setMedicalRecords(sortedRecords);
 
@@ -722,6 +607,7 @@ function PatientDetailsModal({
     loadMedicalHistory();
 
   }, [isOpen, patient?.id]);
+
 
   // ======================================================
   // LOAD LONGITUDINAL AI ANALYSIS
@@ -773,8 +659,9 @@ function PatientDetailsModal({
 
   }, [isOpen, patient?.id]);
 
+
   // ======================================================
-  // LATEST MEDICAL RECORD
+  // LATEST RECORDED MEDICAL RECORD
   // ======================================================
 
   const latestRecord = useMemo(() => {
@@ -787,33 +674,40 @@ function PatientDetailsModal({
 
   }, [medicalRecords]);
 
+
   // ======================================================
   // LATEST CLINICALLY USABLE RECORD
   // ======================================================
-  //
-  // This is intentionally different from latestRecord.
-  //
-  // A patient may have a newer record containing corrupted
-  // or uninterpretable clinical documentation.
-  //
-  // Such a record remains visible in Medical History, but
-  // is not blindly presented as the latest reliable clinical
-  // assessment.
-  // ======================================================
 
-  const latestClinicalRecord = useMemo(() => {
+  const latestClinicallyUsableRecord = useMemo(() => {
 
     if (!medicalRecords.length) {
       return null;
     }
 
     return (
-      medicalRecords.find(
-        isClinicallyUsableRecord
+      medicalRecords.find((record) =>
+        isClinicallyUsableRecord(record)
       ) || null
     );
 
   }, [medicalRecords]);
+
+
+  // ======================================================
+  // CHECK WHETHER LATEST RECORDED RECORD IS USABLE
+  // ======================================================
+
+  const latestRecordIsUsable = useMemo(() => {
+
+    if (!latestRecord) {
+      return false;
+    }
+
+    return isClinicallyUsableRecord(latestRecord);
+
+  }, [latestRecord]);
+
 
   // ======================================================
   // HEALTH STATISTICS
@@ -825,26 +719,14 @@ function PatientDetailsModal({
       medicalRecords.length;
 
     const highRiskVisits =
-      medicalRecords.filter((record) => {
-
-        const score =
-          normalizeRiskScore(
-            record.ai_risk_score
-          );
-
-        return (
-          score !== null &&
-          score >= 70
-        );
-
-      }).length;
+      medicalRecords.filter(
+        (record) =>
+          typeof record.ai_risk_score === "number" &&
+          record.ai_risk_score >= 70
+      ).length;
 
     const latestRisk =
-      latestClinicalRecord
-        ? normalizeRiskScore(
-            latestClinicalRecord.ai_risk_score
-          )
-        : null;
+      latestClinicallyUsableRecord?.ai_risk_score;
 
     return {
       totalVisits,
@@ -852,14 +734,42 @@ function PatientDetailsModal({
       latestRisk,
       lastVisit:
         latestRecord?.visit_date || null,
-      latestClinicalRecord,
+      clinicallyUsableVisit:
+        latestClinicallyUsableRecord?.visit_date ||
+        null,
     };
 
   }, [
     medicalRecords,
     latestRecord,
-    latestClinicalRecord,
+    latestClinicallyUsableRecord,
   ]);
+
+
+  // ======================================================
+  // RISK LABEL
+  // ======================================================
+
+  const getRiskLabel = (score) => {
+
+    if (
+      score === null ||
+      score === undefined
+    ) {
+      return "Insufficient Data";
+    }
+
+    if (score >= 70) {
+      return "High Risk";
+    }
+
+    if (score >= 40) {
+      return "Moderate Risk";
+    }
+
+    return "Low Risk";
+  };
+
 
   // ======================================================
   // DATE FORMATTER
@@ -871,14 +781,7 @@ function PatientDetailsModal({
       return "-";
     }
 
-    const parsedDate =
-      new Date(date);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-      return "-";
-    }
-
-    return parsedDate.toLocaleDateString(
+    return new Date(date).toLocaleDateString(
       "en-IN",
       {
         day: "2-digit",
@@ -889,25 +792,6 @@ function PatientDetailsModal({
 
   };
 
-  // ======================================================
-  // LONGITUDINAL DISPLAY VALUES
-  // ======================================================
-
-  const trendDisplay = useMemo(() => {
-
-    return getTrendDisplay(
-      longitudinalAnalysis?.overall_health_trend
-    );
-
-  }, [longitudinalAnalysis]);
-
-  const riskDisplay = useMemo(() => {
-
-    return getOverallRiskDisplay(
-      longitudinalAnalysis?.overall_risk_level
-    );
-
-  }, [longitudinalAnalysis]);
 
   // ======================================================
   // NO PATIENT
@@ -916,6 +800,7 @@ function PatientDetailsModal({
   if (!patient) {
     return null;
   }
+
 
   return (
     <>
@@ -943,24 +828,20 @@ function PatientDetailsModal({
 
             <h2 className="text-3xl font-bold text-slate-800">
 
-              {patient.first_name}{" "}
-              {patient.last_name}
+              {patient.first_name} {patient.last_name}
 
             </h2>
 
             <p className="text-gray-500">
 
-              {patient.city}
-              {patient.city && patient.state
-                ? ", "
-                : ""}
-              {patient.state}
+              {patient.city}, {patient.state}
 
             </p>
 
           </div>
 
         </div>
+
 
         {/* ================================================== */}
         {/* PERSONAL INFORMATION */}
@@ -1016,6 +897,7 @@ function PatientDetailsModal({
 
         </div>
 
+
         {/* ================================================== */}
         {/* EMERGENCY CONTACT */}
         {/* ================================================== */}
@@ -1029,28 +911,23 @@ function PatientDetailsModal({
           <InfoCard
             icon={<ShieldPlus size={18} />}
             title="Name"
-            value={
-              patient.emergency_contact_name
-            }
+            value={patient.emergency_contact_name}
           />
 
           <InfoCard
             icon={<User size={18} />}
             title="Relationship"
-            value={
-              patient.emergency_contact_relationship
-            }
+            value={patient.emergency_contact_relationship}
           />
 
           <InfoCard
             icon={<Phone size={18} />}
             title="Phone"
-            value={
-              patient.emergency_contact_phone
-            }
+            value={patient.emergency_contact_phone}
           />
 
         </div>
+
 
         {/* ================================================== */}
         {/* MEDICAL INFORMATION */}
@@ -1066,9 +943,7 @@ function PatientDetailsModal({
             icon={<Ruler size={18} />}
             title="Height"
             value={
-              patient.height_cm !== null &&
-              patient.height_cm !== undefined &&
-              patient.height_cm !== ""
+              patient.height_cm
                 ? `${patient.height_cm} cm`
                 : "-"
             }
@@ -1078,9 +953,7 @@ function PatientDetailsModal({
             icon={<Weight size={18} />}
             title="Weight"
             value={
-              patient.weight_kg !== null &&
-              patient.weight_kg !== undefined &&
-              patient.weight_kg !== ""
+              patient.weight_kg
                 ? `${patient.weight_kg} kg`
                 : "-"
             }
@@ -1095,9 +968,7 @@ function PatientDetailsModal({
           <InfoCard
             icon={<HeartPulse size={18} />}
             title="Medical Conditions"
-            value={
-              patient.medical_conditions
-            }
+            value={patient.medical_conditions}
           />
 
           <div className="lg:col-span-2">
@@ -1105,14 +976,13 @@ function PatientDetailsModal({
             <InfoCard
               icon={<Pill size={18} />}
               title="Current Medications"
-              value={
-                patient.current_medications
-              }
+              value={patient.current_medications}
             />
 
           </div>
 
         </div>
+
 
         {/* ================================================== */}
         {/* PATIENT HEALTH OVERVIEW */}
@@ -1151,16 +1021,80 @@ function PatientDetailsModal({
 
             </div>
 
-            {latestRecord && (
+            {latestClinicallyUsableRecord && (
               <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-sm font-medium">
-                Last Visit:{" "}
+                Latest Clinically Usable Visit:{" "}
                 {formatDate(
-                  latestRecord.visit_date
+                  latestClinicallyUsableRecord.visit_date
                 )}
               </span>
             )}
 
           </div>
+
+
+          {/* Latest Recorded Visit Warning */}
+
+          {!historyLoading &&
+            latestRecord &&
+            !latestRecordIsUsable && (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5">
+
+                <div className="flex items-start gap-3">
+
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+
+                    <AlertTriangle
+                      size={21}
+                      className="text-amber-600"
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <p className="font-semibold text-amber-800">
+                      Latest recorded visit requires documentation review
+                    </p>
+
+                    <p className="text-sm text-amber-700 mt-1 leading-relaxed">
+
+                      The most recent recorded visit on{" "}
+                      <strong>
+                        {formatDate(
+                          latestRecord.visit_date
+                        )}
+                      </strong>{" "}
+                      does not contain sufficient meaningful
+                      clinical documentation for a reliable
+                      clinical assessment. It has therefore
+                      been excluded from the clinically usable
+                      health overview.
+
+                    </p>
+
+                    {latestClinicallyUsableRecord && (
+                      <p className="text-sm text-amber-700 mt-2">
+
+                        The overview below uses the latest
+                        clinically usable visit from{" "}
+                        <strong>
+                          {formatDate(
+                            latestClinicallyUsableRecord.visit_date
+                          )}
+                        </strong>
+                        .
+
+                      </p>
+                    )}
+
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
 
           {historyLoading ? (
 
@@ -1172,16 +1106,16 @@ function PatientDetailsModal({
               />
 
               <span className="ml-3 text-gray-500">
-                Loading health overview...
+                Calculating health overview...
               </span>
 
             </div>
 
-          ) : latestClinicalRecord ? (
+          ) : latestClinicallyUsableRecord ? (
 
             <>
 
-              {/* Latest Vital Signs */}
+              {/* Latest Clinically Usable Vital Signs */}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
 
@@ -1194,11 +1128,11 @@ function PatientDetailsModal({
                   }
                   title="Temperature"
                   value={
-                    latestClinicalRecord.temperature !==
+                    latestClinicallyUsableRecord.temperature !==
                       null &&
-                    latestClinicalRecord.temperature !==
+                    latestClinicallyUsableRecord.temperature !==
                       undefined
-                      ? latestClinicalRecord.temperature
+                      ? latestClinicallyUsableRecord.temperature
                       : "-"
                   }
                   unit="°F"
@@ -1214,11 +1148,11 @@ function PatientDetailsModal({
                   }
                   title="Heart Rate"
                   value={
-                    latestClinicalRecord.heart_rate !==
+                    latestClinicallyUsableRecord.heart_rate !==
                       null &&
-                    latestClinicalRecord.heart_rate !==
+                    latestClinicallyUsableRecord.heart_rate !==
                       undefined
-                      ? latestClinicalRecord.heart_rate
+                      ? latestClinicallyUsableRecord.heart_rate
                       : "-"
                   }
                   unit="bpm"
@@ -1234,11 +1168,11 @@ function PatientDetailsModal({
                   }
                   title="Oxygen Saturation"
                   value={
-                    latestClinicalRecord.oxygen_saturation !==
+                    latestClinicallyUsableRecord.oxygen_saturation !==
                       null &&
-                    latestClinicalRecord.oxygen_saturation !==
+                    latestClinicallyUsableRecord.oxygen_saturation !==
                       undefined
-                      ? latestClinicalRecord.oxygen_saturation
+                      ? latestClinicallyUsableRecord.oxygen_saturation
                       : "-"
                   }
                   unit="%"
@@ -1254,13 +1188,14 @@ function PatientDetailsModal({
                   }
                   title="Blood Pressure"
                   value={
-                    latestClinicalRecord.blood_pressure ||
+                    latestClinicallyUsableRecord.blood_pressure ||
                     "-"
                   }
                   description="Latest clinically usable BP"
                 />
 
               </div>
+
 
               {/* Clinical Overview */}
 
@@ -1289,8 +1224,8 @@ function PatientDetailsModal({
 
                       <p className="text-xl font-bold text-slate-800">
 
-                        {healthStats.latestRisk !==
-                        null
+                        {healthStats.latestRisk !== null &&
+                        healthStats.latestRisk !== undefined
                           ? `${healthStats.latestRisk}%`
                           : "N/A"}
 
@@ -1311,6 +1246,7 @@ function PatientDetailsModal({
                   </span>
 
                 </div>
+
 
                 {/* Total Visits */}
 
@@ -1347,7 +1283,8 @@ function PatientDetailsModal({
 
                 </div>
 
-                {/* Last Visit */}
+
+                {/* Last Recorded Visit */}
 
                 <div className="rounded-2xl border bg-white p-5 shadow-sm">
 
@@ -1365,7 +1302,7 @@ function PatientDetailsModal({
                     <div>
 
                       <p className="text-sm text-gray-500">
-                        Last Visit
+                        Last Recorded Visit
                       </p>
 
                       <p className="text-xl font-bold text-slate-800">
@@ -1379,14 +1316,15 @@ function PatientDetailsModal({
                   </div>
 
                   <p className="text-sm text-gray-500">
-                    Most recent recorded visit
+                    Most recent visit recorded in the system
                   </p>
 
                 </div>
 
               </div>
 
-              {/* Latest Diagnosis */}
+
+              {/* Latest Clinically Usable Assessment */}
 
               <div className="mt-4 bg-blue-50 border border-blue-100 rounded-2xl p-5">
 
@@ -1398,12 +1336,12 @@ function PatientDetailsModal({
                   />
 
                   <h4 className="font-bold text-blue-800">
-                    Latest Clinical Assessment
+                    Latest Clinically Usable Assessment
                   </h4>
 
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
                   <div>
 
@@ -1413,7 +1351,7 @@ function PatientDetailsModal({
 
                     <p className="text-slate-700">
                       {formatDate(
-                        latestClinicalRecord.visit_date
+                        latestClinicallyUsableRecord.visit_date
                       )}
                     </p>
 
@@ -1425,16 +1363,39 @@ function PatientDetailsModal({
                       Visit Type
                     </p>
 
-                    <p className="text-slate-700">
-                      {latestClinicalRecord.visit_type
-                        ? latestClinicalRecord.visit_type.replaceAll(
+                    <p className="text-slate-700 capitalize">
+                      {latestClinicallyUsableRecord.visit_type
+                        ? latestClinicallyUsableRecord.visit_type.replaceAll(
                             "_",
                             " "
                           )
-                        : "Medical Visit"}
+                        : "Not recorded"}
                     </p>
 
                   </div>
+
+                  <div>
+
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                      AI Risk
+                    </p>
+
+                    <p className="text-slate-700">
+
+                      {latestClinicallyUsableRecord.ai_risk_score !==
+                        null &&
+                      latestClinicallyUsableRecord.ai_risk_score !==
+                        undefined
+                        ? `${latestClinicallyUsableRecord.ai_risk_score}%`
+                        : "Not available"}
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
 
                   <div>
 
@@ -1443,7 +1404,7 @@ function PatientDetailsModal({
                     </p>
 
                     <p className="text-slate-700">
-                      {latestClinicalRecord.chief_complaint ||
+                      {latestClinicallyUsableRecord.chief_complaint ||
                         "Not recorded"}
                     </p>
 
@@ -1456,7 +1417,7 @@ function PatientDetailsModal({
                     </p>
 
                     <p className="text-slate-700">
-                      {latestClinicalRecord.diagnosis ||
+                      {latestClinicallyUsableRecord.diagnosis ||
                         "Not recorded"}
                     </p>
 
@@ -1465,48 +1426,6 @@ function PatientDetailsModal({
                 </div>
 
               </div>
-
-              {/* Data Quality Notice */}
-
-              {latestRecord &&
-                latestClinicalRecord &&
-                latestRecord.id !==
-                  latestClinicalRecord.id && (
-
-                  <div className="mt-4 bg-amber-50 border border-amber-100 rounded-2xl p-4">
-
-                    <div className="flex items-start gap-3">
-
-                      <AlertTriangle
-                        size={20}
-                        className="text-amber-600 mt-0.5 flex-shrink-0"
-                      />
-
-                      <div>
-
-                        <p className="font-semibold text-amber-800">
-                          Latest Visit Requires Data Review
-                        </p>
-
-                        <p className="text-sm text-amber-700 mt-1 leading-relaxed">
-                          The most recent recorded visit
-                          contains insufficient or
-                          uninterpretable clinical
-                          information for the health
-                          overview. The overview above
-                          therefore uses the most recent
-                          clinically usable record instead.
-                          The original visit remains
-                          available in Medical History.
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                )}
 
             </>
 
@@ -1520,14 +1439,13 @@ function PatientDetailsModal({
               />
 
               <h4 className="font-semibold text-slate-700 mb-1">
-                No Clinically Usable Health Data
+                No Clinically Usable Health Data Available
               </h4>
 
               <p className="text-sm text-gray-500">
-                Medical records exist, but there is
-                currently insufficient valid clinical
-                information to generate the health
-                overview.
+                Add a medical record containing meaningful
+                clinical information to generate the patient's
+                health overview.
               </p>
 
             </div>
@@ -1535,6 +1453,7 @@ function PatientDetailsModal({
           )}
 
         </div>
+
 
         {/* ================================================== */}
         {/* LONGITUDINAL AI INSIGHTS */}
@@ -1569,6 +1488,7 @@ function PatientDetailsModal({
 
           </div>
 
+
           {/* Loading */}
 
           {longitudinalLoading && (
@@ -1591,6 +1511,7 @@ function PatientDetailsModal({
             </div>
 
           )}
+
 
           {/* Error */}
 
@@ -1616,6 +1537,7 @@ function PatientDetailsModal({
 
             )}
 
+
           {/* AI Analysis */}
 
           {!longitudinalLoading &&
@@ -1636,10 +1558,13 @@ function PatientDetailsModal({
 
                     <div className="flex items-center gap-3 mb-3">
 
-                      <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${trendDisplay.bg}`}
-                      >
-                        {trendDisplay.icon}
+                      <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+
+                        <TrendingUp
+                          size={20}
+                          className="text-green-600"
+                        />
+
                       </div>
 
                       <div>
@@ -1648,11 +1573,9 @@ function PatientDetailsModal({
                           Overall Health Trend
                         </p>
 
-                        <p
-                          className={`font-bold ${trendDisplay.text}`}
-                        >
+                        <p className="font-bold text-slate-800">
                           {longitudinalAnalysis.overall_health_trend ||
-                            "Insufficient Data"}
+                            "-"}
                         </p>
 
                       </div>
@@ -1661,21 +1584,18 @@ function PatientDetailsModal({
 
                   </div>
 
+
                   {/* Overall Risk Level */}
 
                   <div className="bg-white border rounded-2xl p-5 shadow-sm">
 
                     <div className="flex items-center gap-3 mb-3">
 
-                      <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${riskDisplay.bg}`}
-                      >
+                      <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
 
                         <AlertTriangle
                           size={20}
-                          className={
-                            riskDisplay.icon
-                          }
+                          className="text-red-600"
                         />
 
                       </div>
@@ -1686,11 +1606,9 @@ function PatientDetailsModal({
                           Overall Risk Level
                         </p>
 
-                        <p
-                          className={`font-bold ${riskDisplay.text}`}
-                        >
+                        <p className="font-bold text-slate-800">
                           {longitudinalAnalysis.overall_risk_level ||
-                            "Insufficient Data"}
+                            "-"}
                         </p>
 
                       </div>
@@ -1698,6 +1616,7 @@ function PatientDetailsModal({
                     </div>
 
                   </div>
+
 
                   {/* Average Risk Score */}
 
@@ -1723,14 +1642,11 @@ function PatientDetailsModal({
                         <p className="font-bold text-slate-800">
 
                           {typeof longitudinalAnalysis.average_risk_score ===
-                            "number" &&
-                          Number.isFinite(
-                            longitudinalAnalysis.average_risk_score
-                          )
+                          "number"
                             ? `${longitudinalAnalysis.average_risk_score.toFixed(
                                 1
                               )}%`
-                            : "Insufficient Data"}
+                            : "-"}
 
                         </p>
 
@@ -1741,6 +1657,7 @@ function PatientDetailsModal({
                   </div>
 
                 </div>
+
 
                 {/* ========================================== */}
                 {/* RISK EVOLUTION */}
@@ -1763,10 +1680,11 @@ function PatientDetailsModal({
 
                   <p className="text-sm text-slate-700 leading-relaxed">
                     {longitudinalAnalysis.risk_evolution ||
-                      "No risk evolution information is available because the available clinical data is insufficient."}
+                      "No risk evolution information available."}
                   </p>
 
                 </div>
+
 
                 {/* ========================================== */}
                 {/* KEY OBSERVATIONS */}
@@ -1787,19 +1705,12 @@ function PatientDetailsModal({
 
                   </div>
 
-                  {Array.isArray(
-                    longitudinalAnalysis.key_observations
-                  ) &&
-                  longitudinalAnalysis.key_observations.length >
-                    0 ? (
+                  {longitudinalAnalysis.key_observations?.length > 0 ? (
 
                     <ul className="space-y-3">
 
                       {longitudinalAnalysis.key_observations.map(
-                        (
-                          observation,
-                          index
-                        ) => (
+                        (observation, index) => (
 
                           <li
                             key={index}
@@ -1831,6 +1742,7 @@ function PatientDetailsModal({
 
                 </div>
 
+
                 {/* ========================================== */}
                 {/* RECURRING PATTERNS */}
                 {/* ========================================== */}
@@ -1854,19 +1766,13 @@ function PatientDetailsModal({
 
                     </div>
 
-                    {Array.isArray(
-                      longitudinalAnalysis.recurring_conditions
-                    ) &&
-                    longitudinalAnalysis.recurring_conditions
-                      .length > 0 ? (
+                    {longitudinalAnalysis.recurring_conditions?.length >
+                    0 ? (
 
                       <div className="flex flex-wrap gap-2">
 
                         {longitudinalAnalysis.recurring_conditions.map(
-                          (
-                            condition,
-                            index
-                          ) => (
+                          (condition, index) => (
 
                             <span
                               key={`${condition}-${index}`}
@@ -1890,6 +1796,7 @@ function PatientDetailsModal({
 
                   </div>
 
+
                   {/* Recurring Complaints */}
 
                   <div className="bg-white border rounded-2xl p-5 shadow-sm">
@@ -1907,19 +1814,13 @@ function PatientDetailsModal({
 
                     </div>
 
-                    {Array.isArray(
-                      longitudinalAnalysis.recurring_complaints
-                    ) &&
-                    longitudinalAnalysis.recurring_complaints
-                      .length > 0 ? (
+                    {longitudinalAnalysis.recurring_complaints?.length >
+                    0 ? (
 
                       <div className="flex flex-wrap gap-2">
 
                         {longitudinalAnalysis.recurring_complaints.map(
-                          (
-                            complaint,
-                            index
-                          ) => (
+                          (complaint, index) => (
 
                             <span
                               key={`${complaint}-${index}`}
@@ -1945,6 +1846,7 @@ function PatientDetailsModal({
 
                 </div>
 
+
                 {/* ========================================== */}
                 {/* IMPORTANT CHANGES */}
                 {/* ========================================== */}
@@ -1964,19 +1866,12 @@ function PatientDetailsModal({
 
                   </div>
 
-                  {Array.isArray(
-                    longitudinalAnalysis.important_changes
-                  ) &&
-                  longitudinalAnalysis.important_changes
-                    .length > 0 ? (
+                  {longitudinalAnalysis.important_changes?.length > 0 ? (
 
                     <ul className="space-y-3">
 
                       {longitudinalAnalysis.important_changes.map(
-                        (
-                          change,
-                          index
-                        ) => (
+                        (change, index) => (
 
                           <li
                             key={index}
@@ -2008,6 +1903,7 @@ function PatientDetailsModal({
 
                 </div>
 
+
                 {/* ========================================== */}
                 {/* FOLLOW-UP RECOMMENDATIONS */}
                 {/* ========================================== */}
@@ -2027,19 +1923,13 @@ function PatientDetailsModal({
 
                   </div>
 
-                  {Array.isArray(
-                    longitudinalAnalysis.follow_up_recommendations
-                  ) &&
-                  longitudinalAnalysis.follow_up_recommendations
-                    .length > 0 ? (
+                  {longitudinalAnalysis.follow_up_recommendations?.length >
+                  0 ? (
 
                     <ul className="space-y-3">
 
                       {longitudinalAnalysis.follow_up_recommendations.map(
-                        (
-                          recommendation,
-                          index
-                        ) => (
+                        (recommendation, index) => (
 
                           <li
                             key={index}
@@ -2071,6 +1961,7 @@ function PatientDetailsModal({
 
                 </div>
 
+
                 {/* ========================================== */}
                 {/* AI DISCLAIMER */}
                 {/* ========================================== */}
@@ -2083,12 +1974,11 @@ function PatientDetailsModal({
                       AI Insight Notice:
                     </strong>{" "}
 
-                    These longitudinal insights are generated
-                    by AI from the patient's available clinical
-                    records. They are intended to assist
-                    healthcare professionals in reviewing
-                    patient history and should not replace
-                    professional medical judgment.
+                    These longitudinal insights are generated by AI
+                    from the patient's available clinical records.
+                    They are intended to assist healthcare
+                    professionals in reviewing patient history and
+                    should not replace professional medical judgment.
 
                   </p>
 
@@ -2098,7 +1988,8 @@ function PatientDetailsModal({
 
             )}
 
-          {/* No analysis */}
+
+          {/* No analysis yet */}
 
           {!longitudinalLoading &&
             !longitudinalError &&
@@ -2120,6 +2011,7 @@ function PatientDetailsModal({
             )}
 
         </div>
+
 
         {/* ================================================== */}
         {/* MEDICAL HISTORY */}
@@ -2174,6 +2066,7 @@ function PatientDetailsModal({
 
           </div>
 
+
           {/* Loading */}
 
           {historyLoading && (
@@ -2193,25 +2086,26 @@ function PatientDetailsModal({
 
           )}
 
+
           {/* Error */}
 
-          {!historyLoading &&
-            historyError && (
+          {!historyLoading && historyError && (
 
-              <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center">
+            <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center">
 
-                <AlertTriangle
-                  size={28}
-                  className="text-red-500 mx-auto mb-2"
-                />
+              <AlertTriangle
+                size={28}
+                className="text-red-500 mx-auto mb-2"
+              />
 
-                <p className="text-red-700 font-medium">
-                  {historyError}
-                </p>
+              <p className="text-red-700 font-medium">
+                {historyError}
+              </p>
 
-              </div>
+            </div>
 
-            )}
+          )}
+
 
           {/* Empty */}
 
@@ -2239,6 +2133,7 @@ function PatientDetailsModal({
 
             )}
 
+
           {/* Medical Records Timeline */}
 
           {!historyLoading &&
@@ -2253,29 +2148,31 @@ function PatientDetailsModal({
 
                 <div className="space-y-6">
 
-                  {medicalRecords.map(
-                    (record) => (
+                  {medicalRecords.map((record) => (
+
+                    <div
+                      key={record.id}
+                      className="relative pl-14"
+                    >
+
+                      {/* Timeline dot */}
 
                       <div
-                        key={record.id}
-                        className="relative pl-14"
-                      >
+                        className={`absolute left-2.5 top-5 w-5 h-5 rounded-full border-4 border-white shadow z-10 ${
+                          isClinicallyUsableRecord(record)
+                            ? "bg-blue-600"
+                            : "bg-amber-500"
+                        }`}
+                      />
 
-                        {/* Timeline dot */}
+                      <MedicalHistoryCard
+                        record={record}
+                        onView={setSelectedMedicalRecord}
+                      />
 
-                        <div className="absolute left-2.5 top-5 w-5 h-5 rounded-full bg-blue-600 border-4 border-white shadow z-10" />
+                    </div>
 
-                        <MedicalHistoryCard
-                          record={record}
-                          onView={
-                            setSelectedMedicalRecord
-                          }
-                        />
-
-                      </div>
-
-                    )
-                  )}
+                  ))}
 
                 </div>
 
@@ -2286,6 +2183,7 @@ function PatientDetailsModal({
         </div>
 
       </AnimatedModal>
+
 
       {/* ================================================== */}
       {/* FULL MEDICAL RECORD */}

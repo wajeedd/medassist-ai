@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
+
 import DeleteMedicalRecordModal from "../../components/medical-records/DeleteMedicalRecordModal";
 import PageLayout from "../../components/layout/PageLayout";
 import EditMedicalRecordModal from "../../components/medical-records/EditMedicalRecordModal";
@@ -12,80 +14,115 @@ import MedicalRecordForm from "../../components/medical-records/MedicalRecordFor
 
 import useMedicalRecords from "../../hooks/useMedicalRecords";
 
+import { analyzeMedicalRecord } from "../../services/medicalRecordService";
+
+
 function MedicalRecords() {
+
   const {
-  filteredRecords,
-  loading,
-  saving,
-  stats,
+    filteredRecords,
+    loading,
+    saving,
+    stats,
 
-  search,
-  setSearch,
+    search,
+    setSearch,
 
-  formData,
-  setFormData,
+    formData,
+    setFormData,
 
-  emptyForm,
+    emptyForm,
 
-  addRecord,
-  editRecord,
-  removeRecord,
+    addRecord,
+    editRecord,
+    removeRecord,
 
-  patients,
-} = useMedicalRecords();
+    patients,
+    loadRecords,
+  } = useMedicalRecords();
+
 
   // --------------------------------
   // Modal States
   // --------------------------------
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const [selectedRecord, setSelectedRecord] = useState(null);
-  const [editingRecord, setEditingRecord] = useState(null);
-  const [deletingRecord, setDeletingRecord] = useState(null);
+  const [selectedRecord, setSelectedRecord] =
+    useState(null);
+
+  const [editingRecord, setEditingRecord] =
+    useState(null);
+
+  const [deletingRecord, setDeletingRecord] =
+    useState(null);
+
+
+  // --------------------------------
+  // AI Analysis State
+  // --------------------------------
+
+  const [aiAnalyzing, setAiAnalyzing] =
+    useState(false);
+
 
   // --------------------------------
   // Selected Patient
   // --------------------------------
 
   const selectedPatient = patients.find(
-    (patient) => patient.id === selectedRecord?.patient_id
+    (patient) =>
+      patient.id === selectedRecord?.patient_id
   );
+
 
   // --------------------------------
   // Form Change
   // --------------------------------
 
   const handleChange = (e) => {
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+
   };
+
 
   // --------------------------------
   // Add Record
   // --------------------------------
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     const success = await addRecord();
 
     if (success) {
+
       setIsModalOpen(false);
+
       setFormData(emptyForm);
+
     }
+
   };
+
 
   // --------------------------------
   // View Record
   // --------------------------------
 
   const handleViewRecord = (record) => {
+
     setSelectedRecord(record);
+
   };
+
 
   // --------------------------------
   // Edit Record
@@ -93,70 +130,192 @@ function MedicalRecords() {
 
   const handleEditRecord = (record) => {
 
-  setEditingRecord(record);
+    setEditingRecord(record);
 
-  setFormData({
-    patient_id: record.patient_id ?? "",
-    visit_date: record.visit_date ?? "",
-    visit_type: record.visit_type ?? "",
-    chief_complaint: record.chief_complaint ?? "",
-    symptoms: record.symptoms ?? "",
-    diagnosis: record.diagnosis ?? "",
-    treatment_plan: record.treatment_plan ?? "",
-    doctor_notes: record.doctor_notes ?? "",
+    setFormData({
 
-    temperature: record.temperature ?? "",
-    blood_pressure: record.blood_pressure ?? "",
-    heart_rate: record.heart_rate ?? "",
-    respiratory_rate: record.respiratory_rate ?? "",
-    oxygen_saturation: record.oxygen_saturation ?? "",
+      patient_id:
+        record.patient_id ?? "",
 
-    prescription: record.prescription ?? "",
-    follow_up_date: record.follow_up_date ?? "",
-  });
+      visit_date:
+        record.visit_date ?? "",
 
-  setIsEditOpen(true);
-};
-    const handleEditSubmit = async (e) => {
-  e.preventDefault();
+      visit_type:
+        record.visit_type ?? "",
 
-  if (!editingRecord) return;
+      chief_complaint:
+        record.chief_complaint ?? "",
 
-  const success = await editRecord(editingRecord.id);
+      symptoms:
+        record.symptoms ?? "",
 
-  if (success) {
-    setIsEditOpen(false);
-    setEditingRecord(null);
-    setFormData(emptyForm);
-  }
-};
+      diagnosis:
+        record.diagnosis ?? "",
+
+      treatment_plan:
+        record.treatment_plan ?? "",
+
+      doctor_notes:
+        record.doctor_notes ?? "",
+
+      temperature:
+        record.temperature ?? "",
+
+      blood_pressure:
+        record.blood_pressure ?? "",
+
+      heart_rate:
+        record.heart_rate ?? "",
+
+      respiratory_rate:
+        record.respiratory_rate ?? "",
+
+      oxygen_saturation:
+        record.oxygen_saturation ?? "",
+
+      prescription:
+        record.prescription ?? "",
+
+      follow_up_date:
+        record.follow_up_date ?? "",
+
+    });
+
+    setIsEditOpen(true);
+
+  };
+
 
   // --------------------------------
-// Delete Record
-// --------------------------------
+  // Edit Submit
+  // --------------------------------
 
-const handleDeleteRecord = (record) => {
-  setDeletingRecord(record);
-};
+  const handleEditSubmit = async (e) => {
 
-const confirmDelete = async () => {
-  if (!deletingRecord) return;
+    e.preventDefault();
 
-  const success = await removeRecord(deletingRecord.id);
+    if (!editingRecord) {
+      return;
+    }
 
-  if (success) {
-    setDeletingRecord(null);
-  }
-};
+    const success = await editRecord(
+      editingRecord.id
+    );
+
+    if (success) {
+
+      setIsEditOpen(false);
+
+      setEditingRecord(null);
+
+      setFormData(emptyForm);
+
+    }
+
+  };
+
+
+  // --------------------------------
+  // Delete Record
+  // --------------------------------
+
+  const handleDeleteRecord = (record) => {
+
+    setDeletingRecord(record);
+
+  };
+
+
+  // --------------------------------
+  // Confirm Delete
+  // --------------------------------
+
+  const confirmDelete = async () => {
+
+    if (!deletingRecord) {
+      return;
+    }
+
+    const success = await removeRecord(
+      deletingRecord.id
+    );
+
+    if (success) {
+
+      setDeletingRecord(null);
+
+    }
+
+  };
+
 
   // --------------------------------
   // Open Add Modal
   // --------------------------------
 
   const openAddModal = () => {
+
     setFormData(emptyForm);
+
     setIsModalOpen(true);
+
   };
+
+
+  // --------------------------------
+  // Analyze Medical Record
+  // --------------------------------
+
+  const handleAnalyzeRecord = async () => {
+
+    if (!selectedRecord) {
+      return;
+    }
+
+    try {
+
+      setAiAnalyzing(true);
+
+      const updatedRecord =
+        await analyzeMedicalRecord(
+          selectedRecord.id
+        );
+
+      // Update the currently opened record
+      // immediately with the new AI result.
+      setSelectedRecord(updatedRecord);
+
+      // Refresh the medical records table so
+      // the risk score is updated there as well.
+      await loadRecords();
+
+      toast.success(
+        "AI analysis completed successfully."
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Failed to analyze medical record:",
+        error
+      );
+
+      const detail =
+        error.response?.data?.detail;
+
+      toast.error(
+        detail ||
+        "Failed to generate AI analysis."
+      );
+
+    } finally {
+
+      setAiAnalyzing(false);
+
+    }
+
+  };
+
 
   return (
     <PageLayout>
@@ -169,6 +328,7 @@ const confirmDelete = async () => {
         onAddRecord={openAddModal}
       />
 
+
       {/* ============================= */}
       {/* Statistics */}
       {/* ============================= */}
@@ -177,16 +337,20 @@ const confirmDelete = async () => {
         stats={stats}
       />
 
+
       {/* ============================= */}
       {/* Search */}
       {/* ============================= */}
 
       <div className="mb-6">
+
         <MedicalRecordsToolbar
           search={search}
           setSearch={setSearch}
         />
+
       </div>
+
 
       {/* ============================= */}
       {/* Medical Records Table */}
@@ -209,6 +373,7 @@ const confirmDelete = async () => {
 
       )}
 
+
       {/* ============================= */}
       {/* Add Medical Record */}
       {/* ============================= */}
@@ -216,8 +381,11 @@ const confirmDelete = async () => {
       <AddMedicalRecordModal
         isOpen={isModalOpen}
         onClose={() => {
+
           setIsModalOpen(false);
+
           setFormData(emptyForm);
+
         }}
       >
 
@@ -232,39 +400,50 @@ const confirmDelete = async () => {
 
       </AddMedicalRecordModal>
 
+
       {/* ============================= */}
-{/* Edit Medical Record */}
-{/* ============================= */}
+      {/* Edit Medical Record */}
+      {/* ============================= */}
 
-<EditMedicalRecordModal
-  isOpen={isEditOpen}
-  onClose={() => {
-    setIsEditOpen(false);
-    setEditingRecord(null);
-    setFormData(emptyForm);
-  }}
->
-  <MedicalRecordForm
-    formData={formData}
-    handleChange={handleChange}
-    handleSubmit={handleEditSubmit}
-    loading={saving}
-    submitText="Save Changes"
-    patients={patients}
-  />
-</EditMedicalRecordModal>
+      <EditMedicalRecordModal
+        isOpen={isEditOpen}
+        onClose={() => {
 
-{/* ============================= */}
-{/* Delete Medical Record */}
-{/* ============================= */}
+          setIsEditOpen(false);
 
-<DeleteMedicalRecordModal
-  record={deletingRecord}
-  isOpen={!!deletingRecord}
-  onClose={() => setDeletingRecord(null)}
-  onConfirm={confirmDelete}
-  loading={saving}
-/>
+          setEditingRecord(null);
+
+          setFormData(emptyForm);
+
+        }}
+      >
+
+        <MedicalRecordForm
+          formData={formData}
+          handleChange={handleChange}
+          handleSubmit={handleEditSubmit}
+          loading={saving}
+          submitText="Save Changes"
+          patients={patients}
+        />
+
+      </EditMedicalRecordModal>
+
+
+      {/* ============================= */}
+      {/* Delete Medical Record */}
+      {/* ============================= */}
+
+      <DeleteMedicalRecordModal
+        record={deletingRecord}
+        isOpen={!!deletingRecord}
+        onClose={() =>
+          setDeletingRecord(null)
+        }
+        onConfirm={confirmDelete}
+        loading={saving}
+      />
+
 
       {/* ============================= */}
       {/* View Medical Record */}
@@ -274,11 +453,16 @@ const confirmDelete = async () => {
         record={selectedRecord}
         patient={selectedPatient}
         isOpen={!!selectedRecord}
-        onClose={() => setSelectedRecord(null)}
+        onClose={() =>
+          setSelectedRecord(null)
+        }
+        onAnalyze={handleAnalyzeRecord}
+        aiAnalyzing={aiAnalyzing}
       />
 
     </PageLayout>
   );
 }
+
 
 export default MedicalRecords;
