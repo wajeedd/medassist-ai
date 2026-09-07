@@ -1,5 +1,25 @@
+from datetime import date
+
 from app.models.medical_record import MedicalRecord
 from app.models.patient import Patient
+
+
+# ============================================================
+# PATIENT AGE HELPER
+# ============================================================
+
+def calculate_age(date_of_birth: date) -> int:
+    today = date.today()
+
+    age = today.year - date_of_birth.year
+
+    if (today.month, today.day) < (
+        date_of_birth.month,
+        date_of_birth.day,
+    ):
+        age -= 1
+
+    return age
 
 
 # ============================================================
@@ -10,6 +30,8 @@ def build_medical_prompt(
     patient: Patient,
     record: MedicalRecord,
 ) -> str:
+
+    patient_age = calculate_age(patient.date_of_birth)
 
     return f"""
 You are an experienced clinical decision support AI.
@@ -31,6 +53,14 @@ Gender:
 
 Date of Birth:
 {patient.date_of_birth}
+
+Current Age:
+{patient_age} years
+
+IMPORTANT:
+The Current Age value above has been calculated by the application
+from the patient's date of birth. Use this exact age in the response.
+Do NOT recalculate or estimate the patient's age.
 
 ------------------------------------
 
@@ -175,6 +205,8 @@ def build_longitudinal_prompt(
     records: list[MedicalRecord],
 ) -> str:
 
+    patient_age = calculate_age(patient.date_of_birth)
+
     records_text = ""
 
     for index, record in enumerate(records, start=1):
@@ -234,7 +266,6 @@ Previous AI Recommendation:
 
 """
 
-
     return f"""
 You are an experienced clinical decision support AI.
 
@@ -270,6 +301,15 @@ Gender:
 
 Date of Birth:
 {patient.date_of_birth}
+
+Current Age:
+{patient_age} years
+
+IMPORTANT:
+The Current Age value above has been calculated by the application
+from the patient's date of birth. Use this exact age if age is
+mentioned in the analysis. Do NOT recalculate or estimate the
+patient's age.
 
 ------------------------------------
 
@@ -478,7 +518,7 @@ Do not provide an autonomous diagnosis.
 
 Do not interpret missing information as normal findings.
 
-Do not interpret missing risk scores as zero risk.
+Do not interpret missing risk scores as zero.
 
 Use "Insufficient Data" when appropriate.
 
