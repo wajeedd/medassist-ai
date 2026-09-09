@@ -158,6 +158,34 @@ class MedicalRecord(Base):
     DateTime(timezone=True),
     nullable=True,
 )
+    # -------------------------
+    # Dataset-Based ML Fields
+    # -------------------------
+
+    ml_diabetes_risk_score: Mapped[Optional[float]] = mapped_column(
+        Float,
+        nullable=True,
+    )
+
+    ml_diabetes_prediction: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
+    ml_diabetes_model: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    ml_diabetes_feature_coverage: Mapped[Optional[float]] = mapped_column(
+        Float,
+        nullable=True,
+    )
+
+    ml_diabetes_analyzed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
 
     # -------------------------
     # Audit Information

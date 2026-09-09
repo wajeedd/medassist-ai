@@ -2,8 +2,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
-from app.schemas.dashboard import DashboardStats
+from app.schemas.dashboard import (
+    DashboardStats,
+    DiabetesModelMetrics,
+)
 from app.services.dashboard_service import DashboardService
+from app.services.ml_service import MLService
+
 
 router = APIRouter(
     prefix="/dashboard",
@@ -20,3 +25,12 @@ def get_dashboard_stats(
 ):
 
     return DashboardService.get_dashboard_stats(db)
+
+
+@router.get(
+    "/ml-metrics",
+    response_model=DiabetesModelMetrics,
+)
+def get_diabetes_model_metrics():
+
+    return MLService.get_diabetes_model_metrics()

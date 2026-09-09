@@ -94,6 +94,12 @@ class MedicalRecordResponse(BaseModel):
     ai_recommendation: Optional[str]
     ai_analyzed_at: Optional[datetime]
 
+    ml_diabetes_risk_score: float | None = None
+    ml_diabetes_prediction: str | None = None
+    ml_diabetes_model: str | None = None
+    ml_diabetes_feature_coverage: float | None = None
+    ml_diabetes_analyzed_at: datetime | None = None
+
     created_at: datetime
     updated_at: datetime
 

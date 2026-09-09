@@ -11,12 +11,17 @@ from app.ai.prompt_builder import (
     build_medical_prompt,
     build_longitudinal_prompt,
 )
+from app.ml.diabetes_predictor import diabetes_predictor
 
 from app.models.medical_record import MedicalRecord
 from app.models.patient import Patient
 
-from app.repositories.medical_record_repository import MedicalRecordRepository
-from app.repositories.patient_repository import PatientRepository
+from app.repositories.medical_record_repository import (
+    MedicalRecordRepository,
+)
+from app.repositories.patient_repository import (
+    PatientRepository,
+)
 
 from app.schemas.ai import (
     AIAnalysisResponse,
@@ -34,11 +39,13 @@ class AIService:
     def analyze(
         patient: Patient,
         medical_record: MedicalRecord,
+        diabetes_ml_context: dict | None = None,
     ) -> AIAnalysisResponse:
 
         prompt = build_medical_prompt(
             patient,
             medical_record,
+            diabetes_ml_context=diabetes_ml_context,
         )
 
         response = gemini_client.generate_content(prompt)
@@ -67,6 +74,7 @@ class AIService:
             return AIAnalysisResponse(**data)
 
         except Exception as error:
+
             print(
                 "AI response parsing error:",
                 error,
@@ -82,7 +90,6 @@ class AIService:
                 detail="Failed to parse AI response.",
             )
 
-
     # =====================================================
     # CHECK WHETHER MEDICAL RECORD HAS ENOUGH DATA
     # =====================================================
@@ -91,10 +98,6 @@ class AIService:
     def has_sufficient_clinical_data(
         medical_record: MedicalRecord,
     ) -> bool:
-
-        # =================================================
-        # PLACEHOLDER / INVALID TEXT VALUES
-        # =================================================
 
         placeholder_values = {
             "zxc",
@@ -142,7 +145,6 @@ class AIService:
 
             normalized = text.lower()
 
-            # Ignore known placeholder values
             if normalized in placeholder_values:
                 continue
 
@@ -184,12 +186,7 @@ class AIService:
         ):
             return False
 
-        # =================================================
-        # MEANINGFUL CLINICAL INFORMATION EXISTS
-        # =================================================
-
         return True
-
 
     # =====================================================
     # SAVE SINGLE MEDICAL RECORD AI ANALYSIS
@@ -242,29 +239,56 @@ class AIService:
         )
 
         # =================================================
-        # GENERATE AI ANALYSIS
+        # RUN DATASET-BASED DIABETES ML ANALYSIS
+        # =================================================
+
+        diabetes_ml_result = diabetes_predictor.predict(
+            medical_record
+        )
+
+        # =================================================
+        # BUILD ML CONTEXT FOR GEMINI
+        # =================================================
+
+        diabetes_ml_context = {
+            "model": diabetes_ml_result.get("model"),
+            "dataset": diabetes_ml_result.get("dataset"),
+            "risk_score": diabetes_ml_result.get(
+                "risk_score"
+            ),
+            "prediction": diabetes_ml_result.get(
+                "prediction"
+            ),
+            "feature_coverage": diabetes_ml_result.get(
+                "feature_coverage"
+            ),
+            "detected_features": diabetes_ml_result.get(
+                "detected_features",
+                {},
+            ),
+        }
+
+        # =================================================
+        # GENERATE GEMINI AI ANALYSIS
         # =================================================
 
         analysis = AIService.analyze(
             patient,
             medical_record,
+            diabetes_ml_context=diabetes_ml_context,
         )
 
         # =================================================
-        # SAVE AI SUMMARY
+        # SAVE GEMINI AI SUMMARY
         # =================================================
 
         medical_record.ai_summary = analysis.summary
 
         # =================================================
-        # SAVE RISK SCORE
-        #
-        # IMPORTANT:
+        # SAVE GEMINI RISK SCORE
         #
         # Insufficient clinical data = NULL
-        #
-        # Never save 0 as a placeholder for
-        # insufficient information.
+        # Never use 0 as a placeholder.
         # =================================================
 
         if sufficient_data:
@@ -278,7 +302,7 @@ class AIService:
             medical_record.ai_risk_score = None
 
         # =================================================
-        # SAVE RECOMMENDATIONS
+        # SAVE GEMINI RECOMMENDATIONS
         # =================================================
 
         medical_record.ai_recommendation = (
@@ -288,14 +312,35 @@ class AIService:
         )
 
         # =================================================
-        # SAVE AI ANALYSIS TIMESTAMP
-        #
-        # Updated only after successful AI generation
-        # and validation.
+        # SAVE GEMINI ANALYSIS TIMESTAMP
         # =================================================
 
         medical_record.ai_analyzed_at = datetime.now(
             timezone.utc
+        )
+
+        # =================================================
+        # SAVE DATASET-BASED DIABETES ML RESULT
+        # =================================================
+
+        medical_record.ml_diabetes_risk_score = (
+            diabetes_ml_result.get("risk_score")
+        )
+
+        medical_record.ml_diabetes_prediction = (
+            diabetes_ml_result.get("prediction")
+        )
+
+        medical_record.ml_diabetes_model = (
+            diabetes_ml_result.get("model")
+        )
+
+        medical_record.ml_diabetes_feature_coverage = (
+            diabetes_ml_result.get("feature_coverage")
+        )
+
+        medical_record.ml_diabetes_analyzed_at = (
+            datetime.now(timezone.utc)
         )
 
         # =================================================
@@ -309,7 +354,6 @@ class AIService:
         )
 
         return analysis
-
 
     # =====================================================
     # LONGITUDINAL PATIENT AI ANALYSIS

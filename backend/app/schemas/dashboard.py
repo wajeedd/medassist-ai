@@ -37,3 +37,26 @@ class DashboardStats(BaseModel):
     insufficient_data_cases: int
 
     recent_records: list[RecentMedicalRecord]
+
+
+class DiabetesModelMetrics(BaseModel):
+
+    algorithm: str
+
+    dataset: str
+
+    accuracy: float
+
+    precision: float
+
+    recall: float
+
+    f1_score: float
+
+    roc_auc: float
+
+    cv_f1_mean: float
+
+    cv_f1_std: float
+
+    feature_importance: dict[str, float]

@@ -1,0 +1,47 @@
+{
+    "dataset": "UCI Early Stage Diabetes Risk Prediction Dataset",
+    "dataset_records": 520,
+    "feature_count": 16,
+    "algorithm": "Random Forest Classifier",
+    "n_estimators": 300,
+    "random_state": 42,
+    "class_weight": "balanced",
+    "min_samples_leaf": 2,
+    "train_test_split": "80/20 stratified",
+    "cross_validation": "5-fold stratified",
+    "accuracy": 0.9711538461538461,
+    "precision": 1.0,
+    "recall": 0.953125,
+    "f1_score": 0.976,
+    "roc_auc": 1.0,
+    "cv_f1_mean": 0.9762246642246643,
+    "cv_f1_std": 0.010218309369096455,
+    "confusion_matrix": [
+        [
+            40,
+            0
+        ],
+        [
+            3,
+            61
+        ]
+    ],
+    "feature_importance": {
+        "Polyuria": 0.2201056314563326,
+        "Polydipsia": 0.21239882242079539,
+        "Gender": 0.11003363970420339,
+        "Age": 0.08310110537536787,
+        "sudden weight loss": 0.06489045026417468,
+        "partial paresis": 0.05468783623301564,
+        "Alopecia": 0.038819814441202645,
+        "Polyphagia": 0.03486482811687099,
+        "delayed healing": 0.030376185476966976,
+        "Irritability": 0.029820259283945157,
+        "Itching": 0.029512626158954752,
+        "visual blurring": 0.023433478898747754,
+        "Genital thrush": 0.020132734377754712,
+        "muscle stiffness": 0.017864109539856527,
+        "Obesity": 0.01517608212888485,
+        "weakness": 0.0147823961229261
+    }
+}

@@ -29,9 +29,67 @@ def calculate_age(date_of_birth: date) -> int:
 def build_medical_prompt(
     patient: Patient,
     record: MedicalRecord,
+    diabetes_ml_context: dict | None = None,
 ) -> str:
 
-    patient_age = calculate_age(patient.date_of_birth)
+    patient_age = calculate_age(
+        patient.date_of_birth
+    )
+
+    # ========================================================
+    # DATASET-BASED ML SUPPORT
+    # ========================================================
+
+    ml_section = ""
+
+    if diabetes_ml_context is not None:
+
+        ml_section = f"""
+------------------------------------
+
+DATASET-BASED ML SUPPORT
+
+A disease-specific machine learning model has analyzed
+the available clinical features extracted from this
+medical record.
+
+Algorithm:
+{diabetes_ml_context.get("model")}
+
+Dataset:
+{diabetes_ml_context.get("dataset")}
+
+Diabetes Risk Probability:
+{diabetes_ml_context.get("risk_score")}
+
+Dataset Prediction:
+{diabetes_ml_context.get("prediction")}
+
+Feature Coverage:
+{diabetes_ml_context.get("feature_coverage")}%
+
+Detected Dataset Features:
+{diabetes_ml_context.get("detected_features", {})}
+
+IMPORTANT:
+
+This is a dataset-based machine learning screening signal.
+
+It is NOT a confirmed diagnosis.
+
+Do NOT blindly copy the ML prediction into the general
+clinical risk score.
+
+Keep the dataset-based diabetes assessment separate
+from the general clinical risk assessment.
+
+Use the ML result only as supporting context alongside
+the actual clinical information provided in the record.
+
+Do not invent missing clinical features.
+
+------------------------------------
+"""
 
     return f"""
 You are an experienced clinical decision support AI.
@@ -100,6 +158,8 @@ Respiratory Rate:
 Oxygen Saturation:
 {record.oxygen_saturation}
 
+{ml_section}
+
 ------------------------------------
 
 RISK SCORING RULES
@@ -114,8 +174,6 @@ If sufficient clinical information is available:
   - Low
   - Moderate
   - High
-
-IMPORTANT:
 
 If the medical record contains insufficient, missing,
 placeholder, invalid, or uninterpretable clinical information,
@@ -133,14 +191,6 @@ Do not invent symptoms, diagnoses, vital signs, test results,
 medications, or other clinical findings.
 
 ------------------------------------
-
-RESPONSE REQUIREMENTS
-
-Return ONLY valid JSON.
-
-Do not include markdown.
-
-Do not include explanations outside the JSON.
 
 IMPORTANT RISK SCORING RULES
 
@@ -168,7 +218,10 @@ risk assessment cannot be performed:
 
 A risk score of 0 should ONLY be returned when the available
 clinical information genuinely supports a minimal clinical risk.
+
 Do NOT use 0 as a placeholder for missing data.
+
+------------------------------------
 
 IMPORTANT DATA QUALITY RULES
 
@@ -181,6 +234,8 @@ as unavailable clinical information.
 Return ONLY valid JSON.
 
 Do not include markdown.
+
+Do not include explanations outside the JSON.
 
 Return this structure exactly:
 
@@ -205,11 +260,16 @@ def build_longitudinal_prompt(
     records: list[MedicalRecord],
 ) -> str:
 
-    patient_age = calculate_age(patient.date_of_birth)
+    patient_age = calculate_age(
+        patient.date_of_birth
+    )
 
     records_text = ""
 
-    for index, record in enumerate(records, start=1):
+    for index, record in enumerate(
+        records,
+        start=1,
+    ):
 
         records_text += f"""
 ====================================
@@ -263,6 +323,15 @@ Previous AI Summary:
 
 Previous AI Recommendation:
 {record.ai_recommendation}
+
+Dataset-Based Diabetes ML Risk:
+{getattr(record, "ml_diabetes_risk_score", None)}
+
+Dataset-Based Diabetes ML Prediction:
+{getattr(record, "ml_diabetes_prediction", None)}
+
+Dataset-Based ML Feature Coverage:
+{getattr(record, "ml_diabetes_feature_coverage", None)}%
 
 """
 
@@ -319,6 +388,20 @@ COMPLETE MEDICAL HISTORY
 
 ------------------------------------
 
+DATASET-BASED ML INTERPRETATION
+
+Dataset-based diabetes ML results are supporting
+disease-specific signals.
+
+They must NOT automatically be merged with the
+general AI clinical risk score.
+
+Consider them as additional context only.
+
+Do not treat a dataset prediction as a confirmed diagnosis.
+
+------------------------------------
+
 ANALYSIS REQUIREMENTS
 
 1. OVERALL HEALTH TREND
@@ -333,8 +416,6 @@ Determine the overall health trend using one of:
 
 Base the trend ONLY on clinically meaningful information
 available across the patient's assessable visits.
-
-IMPORTANT:
 
 Do NOT require every medical record to contain complete
 clinical information.
@@ -361,8 +442,6 @@ clinical improvement or worsening.
 Explain how the patient's clinical risk changed
 across the available clinically assessable visits.
 
-IMPORTANT:
-
 A missing or null AI risk score means that the record
 was not sufficiently assessable.
 
@@ -381,19 +460,14 @@ from
 Determine the overall risk level using the clinically
 assessable records and their valid AI risk scores.
 
-IMPORTANT:
-
-Do NOT require every medical record to contain a valid
-risk score.
-
 If one or more valid AI risk scores are available, use
 those valid scores to determine the overall risk level.
 
 Ignore null, missing, corrupted, or unassessable records
 when determining the risk level, but mention those
-documentation limitations in the observations when relevant.
+documentation limitations when relevant.
 
-Use the following rules:
+Use:
 
 - Average/overall score 0-39 = Low
 - Average/overall score 40-69 = Moderate
@@ -414,10 +488,8 @@ Never interpret missing risk scores as zero.
 Calculate the average ONLY from valid, available
 AI risk scores.
 
-IMPORTANT:
-
 Do NOT include null, missing, invalid, or unavailable
-risk scores in the calculation.
+risk scores.
 
 Do NOT treat missing risk scores as 0.
 
