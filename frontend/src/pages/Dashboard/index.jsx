@@ -945,6 +945,247 @@ function Dashboard() {
         </div>
 
       </div>
+            {/* =================================================
+          RANDOM FOREST CONFUSION MATRIX
+      ================================================= */}
+
+      <div className="bg-white rounded-2xl shadow border p-6 mb-8">
+
+        <div className="flex items-center gap-3 mb-6">
+
+          <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+
+            <Brain
+              size={21}
+              className="text-green-600"
+            />
+
+          </div>
+
+          <div>
+
+            <h2 className="text-xl font-bold text-slate-800">
+
+              Random Forest Confusion Matrix
+
+            </h2>
+
+            <p className="text-sm text-gray-500">
+
+              Classification results on the held-out test dataset
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+        {mlLoading ? (
+
+          <div className="py-10 text-center text-gray-500">
+
+            Loading confusion matrix...
+
+          </div>
+
+        ) : mlMetrics?.confusion_matrix ? (
+
+          <>
+
+            {/* Confusion Matrix */}
+
+            <div className="max-w-2xl mx-auto">
+
+              {/* Predicted Label */}
+
+              <p className="text-center text-sm font-semibold text-slate-600 mb-3">
+
+                Predicted Class
+
+              </p>
+
+
+              <div className="grid grid-cols-[120px_1fr_1fr] gap-2">
+
+                {/* Empty corner */}
+
+                <div></div>
+
+
+                {/* Predicted Negative */}
+
+                <div className="text-center text-sm font-semibold text-slate-600 pb-2">
+
+                  Negative
+
+                </div>
+
+
+                {/* Predicted Positive */}
+
+                <div className="text-center text-sm font-semibold text-slate-600 pb-2">
+
+                  Positive
+
+                </div>
+
+
+                {/* Actual Negative Label */}
+
+                <div className="flex items-center justify-end pr-4 text-sm font-semibold text-slate-600">
+
+                  Actual Negative
+
+                </div>
+
+
+                {/* True Negative */}
+
+                <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+
+                  <p className="text-3xl font-bold text-green-700">
+
+                    {mlMetrics.confusion_matrix[0][0]}
+
+                  </p>
+
+                  <p className="text-xs font-semibold text-green-700 mt-2">
+
+                    True Negative (TN)
+
+                  </p>
+
+                </div>
+
+
+                {/* False Positive */}
+
+                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+
+                  <p className="text-3xl font-bold text-red-700">
+
+                    {mlMetrics.confusion_matrix[0][1]}
+
+                  </p>
+
+                  <p className="text-xs font-semibold text-red-700 mt-2">
+
+                    False Positive (FP)
+
+                  </p>
+
+                </div>
+
+
+                {/* Actual Positive Label */}
+
+                <div className="flex items-center justify-end pr-4 text-sm font-semibold text-slate-600">
+
+                  Actual Positive
+
+                </div>
+
+
+                {/* False Negative */}
+
+                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+
+                  <p className="text-3xl font-bold text-red-700">
+
+                    {mlMetrics.confusion_matrix[1][0]}
+
+                  </p>
+
+                  <p className="text-xs font-semibold text-red-700 mt-2">
+
+                    False Negative (FN)
+
+                  </p>
+
+                </div>
+
+
+                {/* True Positive */}
+
+                <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+
+                  <p className="text-3xl font-bold text-green-700">
+
+                    {mlMetrics.confusion_matrix[1][1]}
+
+                  </p>
+
+                  <p className="text-xs font-semibold text-green-700 mt-2">
+
+                    True Positive (TP)
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* Test Set Summary */}
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+
+              <MLMetricCard
+                label="True Negatives"
+                value={mlMetrics.confusion_matrix[0][0]}
+              />
+
+              <MLMetricCard
+                label="False Positives"
+                value={mlMetrics.confusion_matrix[0][1]}
+              />
+
+              <MLMetricCard
+                label="False Negatives"
+                value={mlMetrics.confusion_matrix[1][0]}
+              />
+
+              <MLMetricCard
+                label="True Positives"
+                value={mlMetrics.confusion_matrix[1][1]}
+              />
+
+            </div>
+
+
+            {/* Explanation */}
+
+            <div className="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+
+              <p className="text-sm text-slate-600 leading-relaxed">
+
+                The confusion matrix summarizes the predictions
+                made by the Random Forest Classifier on the test
+                dataset. The model correctly classified 40 negative
+                cases and 61 positive cases, while 3 positive cases
+                were incorrectly classified as negative. No negative
+                cases were incorrectly classified as positive.
+
+              </p>
+
+            </div>
+
+          </>
+
+        ) : (
+
+          <div className="py-10 text-center text-gray-500">
+
+            Confusion matrix data is currently unavailable.
+
+          </div>
+
+        )}
+
+      </div>
 
 
       {/* =================================================

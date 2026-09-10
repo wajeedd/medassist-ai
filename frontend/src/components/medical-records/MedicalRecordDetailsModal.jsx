@@ -23,16 +23,23 @@ function MedicalRecordDetailsModal({
   }
 
 
-  const riskScore =
-    record.ai_risk_score;
+  // =========================================================
+  // AI RISK
+  // =========================================================
+
+  const riskScore = record.ai_risk_score;
 
 
   const hasAIAnalysis =
     !!record.ai_summary ||
-    record.ai_risk_score !== null &&
-    record.ai_risk_score !== undefined ||
+    (record.ai_risk_score !== null &&
+      record.ai_risk_score !== undefined) ||
     !!record.ai_recommendation;
 
+
+  // =========================================================
+  // RISK STYLE
+  // =========================================================
 
   const getRiskStyle = (score) => {
 
@@ -52,9 +59,12 @@ function MedicalRecordDetailsModal({
     }
 
     return "bg-green-100 text-green-700";
-
   };
 
+
+  // =========================================================
+  // RISK LABEL
+  // =========================================================
 
   const getRiskLabel = (score) => {
 
@@ -74,9 +84,12 @@ function MedicalRecordDetailsModal({
     }
 
     return "Low Risk";
-
   };
 
+
+  // =========================================================
+  // RENDER
+  // =========================================================
 
   return (
     <AnimatedModal
@@ -88,9 +101,9 @@ function MedicalRecordDetailsModal({
       <div className="space-y-6">
 
 
-        {/* ========================= */}
-        {/* Patient Information */}
-        {/* ========================= */}
+        {/* =====================================================
+            PATIENT INFORMATION
+        ===================================================== */}
 
         <section>
 
@@ -103,7 +116,6 @@ function MedicalRecordDetailsModal({
             {patient ? (
 
               <>
-
                 <p className="font-semibold text-slate-800">
                   {patient.first_name}{" "}
                   {patient.last_name}
@@ -115,19 +127,15 @@ function MedicalRecordDetailsModal({
                 </p>
 
                 {patient.email && (
-
                   <p className="text-sm text-gray-500">
                     {patient.email}
                   </p>
-
                 )}
-
               </>
 
             ) : (
 
               <>
-
                 <p className="font-semibold text-slate-800">
                   Patient
                 </p>
@@ -135,7 +143,6 @@ function MedicalRecordDetailsModal({
                 <p className="text-xs text-gray-500 mt-1 break-all">
                   {record.patient_id}
                 </p>
-
               </>
 
             )}
@@ -145,9 +152,9 @@ function MedicalRecordDetailsModal({
         </section>
 
 
-        {/* ========================= */}
-        {/* Visit Information */}
-        {/* ========================= */}
+        {/* =====================================================
+            VISIT INFORMATION
+        ===================================================== */}
 
         <section>
 
@@ -169,9 +176,7 @@ function MedicalRecordDetailsModal({
 
             <InfoItem
               label="Chief Complaint"
-              value={
-                record.chief_complaint
-              }
+              value={record.chief_complaint}
             />
 
             <InfoItem
@@ -187,9 +192,9 @@ function MedicalRecordDetailsModal({
         </section>
 
 
-        {/* ========================= */}
-        {/* Clinical Information */}
-        {/* ========================= */}
+        {/* =====================================================
+            CLINICAL INFORMATION
+        ===================================================== */}
 
         <section>
 
@@ -211,16 +216,12 @@ function MedicalRecordDetailsModal({
 
             <TextBlock
               label="Treatment Plan"
-              value={
-                record.treatment_plan
-              }
+              value={record.treatment_plan}
             />
 
             <TextBlock
               label="Doctor Notes"
-              value={
-                record.doctor_notes
-              }
+              value={record.doctor_notes}
             />
 
           </div>
@@ -228,9 +229,9 @@ function MedicalRecordDetailsModal({
         </section>
 
 
-        {/* ========================= */}
-        {/* Vital Signs */}
-        {/* ========================= */}
+        {/* =====================================================
+            VITAL SIGNS
+        ===================================================== */}
 
         <section>
 
@@ -293,9 +294,9 @@ function MedicalRecordDetailsModal({
         </section>
 
 
-        {/* ========================= */}
-        {/* Prescription */}
-        {/* ========================= */}
+        {/* =====================================================
+            PRESCRIPTION
+        ===================================================== */}
 
         <section>
 
@@ -315,9 +316,9 @@ function MedicalRecordDetailsModal({
         </section>
 
 
-        {/* ========================= */}
-        {/* AI Analysis */}
-        {/* ========================= */}
+        {/* =====================================================
+            GEMINI AI CLINICAL ANALYSIS
+        ===================================================== */}
 
         <section>
 
@@ -337,9 +338,9 @@ function MedicalRecordDetailsModal({
             </div>
 
 
-            {/* ========================= */}
-            {/* AI Analyze Button */}
-            {/* ========================= */}
+            {/* =================================================
+                AI ANALYZE BUTTON
+            ================================================= */}
 
             {onAnalyze && (
 
@@ -359,7 +360,6 @@ function MedicalRecordDetailsModal({
                     />
 
                     Analyzing...
-
                   </>
 
                 ) : hasAIAnalysis ? (
@@ -368,7 +368,6 @@ function MedicalRecordDetailsModal({
                     <RefreshCw size={17} />
 
                     Re-analyze with AI
-
                   </>
 
                 ) : (
@@ -377,7 +376,6 @@ function MedicalRecordDetailsModal({
                     <Sparkles size={17} />
 
                     Analyze with AI
-
                   </>
 
                 )}
@@ -390,36 +388,47 @@ function MedicalRecordDetailsModal({
 
 
           <div className="space-y-4">
-  {/* AI Analysis Status */}
-  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-    <div className="flex items-center justify-between gap-4">
-      <div>
-        <p className="text-sm font-semibold text-blue-800">
-          AI Analysis Status
-        </p>
-
-        <p className="text-sm text-blue-700 mt-1">
-          {record.ai_analyzed_at
-            ? `Last analyzed on ${formatDateTime(
-                record.ai_analyzed_at
-              )}`
-            : "This record has not been analyzed by AI yet."}
-        </p>
-      </div>
-
-      <Sparkles
-        size={22}
-        className="text-blue-600 shrink-0"
-      />
-    </div>
-  </div>
-
-  {/* Risk */}
 
 
-            {/* ========================= */}
-            {/* Risk */}
-            {/* ========================= */}
+            {/* =================================================
+                AI ANALYSIS STATUS
+            ================================================= */}
+
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+
+              <div className="flex items-center justify-between gap-4">
+
+                <div>
+
+                  <p className="text-sm font-semibold text-blue-800">
+                    AI Analysis Status
+                  </p>
+
+                  <p className="text-sm text-blue-700 mt-1">
+
+                    {record.ai_analyzed_at
+                      ? `Last analyzed on ${formatDateTime(
+                          record.ai_analyzed_at
+                        )}`
+                      : "This record has not been analyzed by AI yet."}
+
+                  </p>
+
+                </div>
+
+                <Sparkles
+                  size={22}
+                  className="text-blue-600 shrink-0"
+                />
+
+              </div>
+
+            </div>
+
+
+            {/* =================================================
+                AI RISK
+            ================================================= */}
 
             <div className="bg-slate-50 rounded-xl p-4">
 
@@ -448,11 +457,7 @@ function MedicalRecordDetailsModal({
                     riskScore
                   )}`}
                 >
-
-                  {getRiskLabel(
-                    riskScore
-                  )}
-
+                  {getRiskLabel(riskScore)}
                 </span>
 
               </div>
@@ -460,9 +465,9 @@ function MedicalRecordDetailsModal({
             </div>
 
 
-            {/* ========================= */}
-            {/* Summary */}
-            {/* ========================= */}
+            {/* =================================================
+                AI SUMMARY
+            ================================================= */}
 
             <TextBlock
               label="AI Summary"
@@ -473,9 +478,9 @@ function MedicalRecordDetailsModal({
             />
 
 
-            {/* ========================= */}
-            {/* Recommendations */}
-            {/* ========================= */}
+            {/* =================================================
+                AI RECOMMENDATIONS
+            ================================================= */}
 
             <TextBlock
               label="AI Recommendations"
@@ -488,124 +493,161 @@ function MedicalRecordDetailsModal({
           </div>
 
         </section>
-                {/* ========================= */}
-        {/* Dataset-Based Diabetes ML Analysis */}
-        {/* ========================= */}
+
+
+        {/* =====================================================
+            DATASET-BASED DIABETES SCREENING
+            RANDOM FOREST MODEL
+        ===================================================== */}
 
         <section>
 
-          <div className="mb-3">
+          <div className="flex items-center gap-3 mb-3">
 
-            <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
 
               <Brain
                 size={21}
                 className="text-purple-600"
               />
 
+            </div>
+
+            <div>
+
               <h3 className="text-lg font-semibold text-slate-800">
-                Dataset-Based Diabetes ML Analysis
+                Dataset-Based Diabetes Screening
               </h3>
+
+              <p className="text-sm text-gray-500 mt-1">
+                Screening signal generated by the trained
+                Random Forest model.
+              </p>
 
             </div>
 
-            <p className="text-sm text-gray-500 mt-1">
-              Diabetes screening support generated using the
-              integrated Random Forest machine learning model.
-            </p>
-
           </div>
 
+
+          {/* =================================================
+              ML RESULT AVAILABLE
+          ================================================= */}
 
           {record.ml_diabetes_risk_score !== null &&
           record.ml_diabetes_risk_score !== undefined ? (
 
             <div className="space-y-4">
 
-              {/* ML Risk Overview */}
 
-              <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
+              {/* =================================================
+                  ML RESULT CARDS
+              ================================================= */}
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-
-                  <div>
-
-                    <p className="text-sm font-medium text-purple-700">
-                      Diabetes Screening Risk
-                    </p>
-
-                    <p className="text-3xl font-bold text-purple-800 mt-1">
-                      {Number(
-                        record.ml_diabetes_risk_score
-                      ).toFixed(2)}
-                      %
-                    </p>
-
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
 
-                  <span
-                    className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                {/* Prediction */}
+
+                <div className="bg-slate-50 rounded-xl p-4 border">
+
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Model Prediction
+                  </p>
+
+                  <p
+                    className={`text-2xl font-bold mt-2 ${
                       record.ml_diabetes_prediction === "Positive"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-green-100 text-green-700"
+                        ? "text-red-600"
+                        : "text-green-600"
                     }`}
                   >
-                    {record.ml_diabetes_prediction || "N/A"}
-                  </span>
+                    {record.ml_diabetes_prediction ||
+                      "N/A"}
+                  </p>
+
+                </div>
+
+
+                {/* Risk Probability */}
+
+                <div className="bg-slate-50 rounded-xl p-4 border">
+
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Risk Probability
+                  </p>
+
+                  <p className="text-2xl font-bold text-slate-800 mt-2">
+
+                    {Number(
+                      record.ml_diabetes_risk_score
+                    ).toFixed(2)}
+                    %
+
+                  </p>
+
+                </div>
+
+
+                {/* Feature Coverage */}
+
+                <div className="bg-slate-50 rounded-xl p-4 border">
+
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Feature Coverage
+                  </p>
+
+                  <p className="text-2xl font-bold text-slate-800 mt-2">
+
+                    {record.ml_diabetes_feature_coverage !== null &&
+                    record.ml_diabetes_feature_coverage !== undefined
+                      ? `${Number(
+                          record.ml_diabetes_feature_coverage
+                        ).toFixed(2)}%`
+                      : "N/A"}
+
+                  </p>
+
+                </div>
+
+
+                {/* Model */}
+
+                <div className="bg-slate-50 rounded-xl p-4 border">
+
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Model
+                  </p>
+
+                  <p className="text-sm font-semibold text-slate-800 mt-2">
+                    {record.ml_diabetes_model ||
+                      "N/A"}
+                  </p>
 
                 </div>
 
               </div>
 
 
-              {/* ML Details */}
+              {/* =================================================
+                  DATASET INFORMATION
+              ================================================= */}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
 
-                <InfoItem
-                  label="Prediction"
-                  value={
-                    record.ml_diabetes_prediction ||
-                    "N/A"
-                  }
-                />
+                <p className="text-xs font-medium text-purple-600 uppercase tracking-wide">
+                  Dataset
+                </p>
 
-                <InfoItem
-                  label="ML Model"
-                  value={
-                    record.ml_diabetes_model ||
-                    "N/A"
-                  }
-                />
-
-                <InfoItem
-                  label="Feature Coverage"
-                  value={
-                    record.ml_diabetes_feature_coverage !== null &&
-                    record.ml_diabetes_feature_coverage !== undefined
-                      ? `${Number(
-                          record.ml_diabetes_feature_coverage
-                        ).toFixed(2)}%`
-                      : "N/A"
-                  }
-                />
-
-                <InfoItem
-                  label="ML Last Analyzed"
-                  value={
-                    record.ml_diabetes_analyzed_at
-                      ? formatDateTime(
-                          record.ml_diabetes_analyzed_at
-                        )
-                      : "Not analyzed yet"
-                  }
-                />
+                <p className="text-sm font-semibold text-slate-800 mt-1">
+                  UCI Early Stage Diabetes Risk Prediction Dataset
+                </p>
 
               </div>
 
 
-              {/* Model Information */}
+              {/* =================================================
+                  ML SUPPORT INFORMATION
+              ================================================= */}
 
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
 
@@ -623,12 +665,14 @@ function MedicalRecordDetailsModal({
                     </p>
 
                     <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+
                       This result is generated by the integrated
                       Random Forest Classifier trained on the
                       UCI Early Stage Diabetes Risk Prediction
                       Dataset. It is provided as a dataset-based
                       screening signal and should not be treated
                       as a confirmed medical diagnosis.
+
                     </p>
 
                   </div>
@@ -637,9 +681,50 @@ function MedicalRecordDetailsModal({
 
               </div>
 
+
+              {/* =================================================
+                  FEATURE COVERAGE EXPLANATION
+              ================================================= */}
+
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+
+                <p className="text-sm text-blue-800 leading-relaxed">
+
+                  <strong>Feature Coverage:</strong>{" "}
+                  {record.ml_diabetes_feature_coverage !== null &&
+                  record.ml_diabetes_feature_coverage !== undefined
+                    ? `${Number(
+                        record.ml_diabetes_feature_coverage
+                      ).toFixed(2)}% of the model's input features were
+                      identified from the available medical record.`
+                    : "Feature coverage information is not available."}
+
+                </p>
+
+              </div>
+
+
+              {/* =================================================
+                  ML ANALYSIS TIME
+              ================================================= */}
+
+              <div className="text-sm text-gray-500">
+
+                {record.ml_diabetes_analyzed_at
+                  ? `ML analysis performed on ${formatDateTime(
+                      record.ml_diabetes_analyzed_at
+                    )}`
+                  : "ML analysis time not available."}
+
+              </div>
+
             </div>
 
           ) : (
+
+            /* =================================================
+               ML RESULT NOT AVAILABLE
+            ================================================= */
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
 
@@ -657,8 +742,10 @@ function MedicalRecordDetailsModal({
                   </p>
 
                   <p className="text-sm text-gray-500 mt-1">
+
                     Dataset-based diabetes screening has not
                     been generated for this medical record yet.
+
                   </p>
 
                 </div>
@@ -672,39 +759,53 @@ function MedicalRecordDetailsModal({
         </section>
 
 
-        {/* ========================= */}
-        {/* Record Information */}
-        {/* ========================= */}
+        {/* =====================================================
+            RECORD INFORMATION
+        ===================================================== */}
 
-        {/* Record Information */}
-<section className="border-t pt-4">
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-    <InfoItem
-      label="Created At"
-      value={formatDateTime(
-        record.created_at
-      )}
-    />
+        <section className="border-t pt-4">
 
-    <InfoItem
-      label="Last Updated"
-      value={formatDateTime(
-        record.updated_at
-      )}
-    />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
-    <InfoItem
-      label="AI Last Analyzed"
-      value={
-        record.ai_analyzed_at
-          ? formatDateTime(
-              record.ai_analyzed_at
-            )
-          : "Not analyzed yet"
-      }
-    />
-  </div>
-</section>
+            <InfoItem
+              label="Created At"
+              value={formatDateTime(
+                record.created_at
+              )}
+            />
+
+            <InfoItem
+              label="Last Updated"
+              value={formatDateTime(
+                record.updated_at
+              )}
+            />
+
+            <InfoItem
+              label="AI Last Analyzed"
+              value={
+                record.ai_analyzed_at
+                  ? formatDateTime(
+                      record.ai_analyzed_at
+                    )
+                  : "Not analyzed yet"
+              }
+            />
+
+            <InfoItem
+              label="ML Last Analyzed"
+              value={
+                record.ml_diabetes_analyzed_at
+                  ? formatDateTime(
+                      record.ml_diabetes_analyzed_at
+                    )
+                  : "Not analyzed yet"
+              }
+            />
+
+          </div>
+
+        </section>
 
 
       </div>
@@ -714,9 +815,9 @@ function MedicalRecordDetailsModal({
 }
 
 
-/* ========================= */
-/* Helper Components */
-/* ========================= */
+/* =========================================================
+   INFO ITEM
+========================================================= */
 
 function InfoItem({
   label,
@@ -740,6 +841,10 @@ function InfoItem({
   );
 }
 
+
+/* =========================================================
+   TEXT BLOCK
+========================================================= */
 
 function TextBlock({
   label,
@@ -768,6 +873,10 @@ function TextBlock({
 
 }
 
+
+/* =========================================================
+   DATE / TIME FORMATTER
+========================================================= */
 
 function formatDateTime(value) {
 
