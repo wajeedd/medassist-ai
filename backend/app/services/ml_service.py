@@ -66,4 +66,6 @@ class MLService:
     cv_f1_std=metrics["cv_f1_std"] * 100,
 
     feature_importance=metrics["feature_importance"],
+
+    confusion_matrix=metrics["confusion_matrix"],
 )

@@ -60,3 +60,5 @@ class DiabetesModelMetrics(BaseModel):
     cv_f1_std: float
 
     feature_importance: dict[str, float]
+
+    confusion_matrix: list[list[int]]
