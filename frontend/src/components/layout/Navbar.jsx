@@ -1,10 +1,16 @@
 import { Bell, UserCircle } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
 
 function Navbar() {
+
+  const { user } = useAuth();
+
   return (
+
     <header className="bg-white shadow-sm h-20 px-8 flex items-center justify-between">
 
       <div>
+
         <h1 className="text-2xl font-bold text-slate-800">
           Dashboard
         </h1>
@@ -12,7 +18,9 @@ function Navbar() {
         <p className="text-gray-500">
           Welcome back 👋
         </p>
+
       </div>
+
 
       <div className="flex items-center gap-6">
 
@@ -27,6 +35,7 @@ function Navbar() {
 
         </button>
 
+
         <div className="flex items-center gap-3">
 
           <UserCircle
@@ -34,14 +43,23 @@ function Navbar() {
             className="text-blue-600"
           />
 
+
           <div>
 
             <h2 className="font-semibold">
-              Dr. Shaik Wajeed
+
+              {user?.full_name || "Doctor"}
+
             </h2>
 
+
             <p className="text-sm text-gray-500">
-              Doctor
+
+              {user?.role
+                ? user.role.charAt(0).toUpperCase() +
+                  user.role.slice(1)
+                : "Doctor"}
+
             </p>
 
           </div>
@@ -51,7 +69,9 @@ function Navbar() {
       </div>
 
     </header>
+
   );
+
 }
 
 export default Navbar;

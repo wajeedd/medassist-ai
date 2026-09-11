@@ -193,9 +193,13 @@ function Login() {
 
           Don't have an account?
 
-          <span className="text-blue-600 font-semibold cursor-pointer ml-2 hover:underline">
-            Register
-          </span>
+          <button
+  type="button"
+  onClick={() => navigate("/register")}
+  className="text-blue-600 font-semibold ml-2 hover:underline"
+>
+  Register
+</button>
 
         </p>
 
