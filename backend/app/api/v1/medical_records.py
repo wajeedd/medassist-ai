@@ -1,8 +1,5 @@
 from uuid import UUID
 
-from app.schemas.ai import LongitudinalAIResponse
-from app.services.ai_service import AIService
-
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
@@ -10,12 +7,15 @@ from app.database.session import get_db
 from app.dependencies.auth import get_current_user
 from app.models.user import User
 
+from app.schemas.ai import LongitudinalAIResponse
+
 from app.schemas.medical_record import (
     MedicalRecordCreate,
     MedicalRecordResponse,
     MedicalRecordUpdate,
 )
 
+from app.services.ai_service import AIService
 from app.services.medical_record_service import MedicalRecordService
 
 
@@ -58,7 +58,10 @@ def get_all_medical_records(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return MedicalRecordService.get_all_medical_records(db)
+    return MedicalRecordService.get_all_medical_records(
+        db=db,
+        doctor_id=current_user.id,
+    )
 
 
 # =========================================================
@@ -78,8 +81,9 @@ def get_patient_medical_records(
     current_user: User = Depends(get_current_user),
 ):
     return MedicalRecordService.get_patient_medical_records(
-        db,
-        patient_id,
+        db=db,
+        patient_id=patient_id,
+        doctor_id=current_user.id,
     )
 
 
@@ -102,6 +106,7 @@ def analyze_patient_longitudinal_history(
     return AIService.analyze_patient_history(
         db=db,
         patient_id=patient_id,
+        doctor_id=current_user.id,
     )
 
 
@@ -118,17 +123,24 @@ def analyze_medical_record(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Run AI analysis and save the result
+    # -----------------------------------------------------
+    # Run AI analysis only for a record owned by this doctor
+    # -----------------------------------------------------
+
     AIService.analyze_medical_record(
         db=db,
         medical_record_id=medical_record_id,
+        doctor_id=current_user.id,
     )
 
-    # Return the updated medical record including
-    # the newly generated AI fields
+    # -----------------------------------------------------
+    # Return the updated medical record
+    # -----------------------------------------------------
+
     return MedicalRecordService.get_medical_record(
         db=db,
         medical_record_id=medical_record_id,
+        doctor_id=current_user.id,
     )
 
 
@@ -146,8 +158,9 @@ def get_medical_record(
     current_user: User = Depends(get_current_user),
 ):
     return MedicalRecordService.get_medical_record(
-        db,
-        medical_record_id,
+        db=db,
+        medical_record_id=medical_record_id,
+        doctor_id=current_user.id,
     )
 
 
@@ -166,9 +179,10 @@ def update_medical_record(
     current_user: User = Depends(get_current_user),
 ):
     return MedicalRecordService.update_medical_record(
-        db,
-        medical_record_id,
-        request,
+        db=db,
+        medical_record_id=medical_record_id,
+        data=request,
+        doctor_id=current_user.id,
     )
 
 
@@ -185,6 +199,7 @@ def delete_medical_record(
     current_user: User = Depends(get_current_user),
 ):
     return MedicalRecordService.delete_medical_record(
-        db,
-        medical_record_id,
+        db=db,
+        medical_record_id=medical_record_id,
+        doctor_id=current_user.id,
     )

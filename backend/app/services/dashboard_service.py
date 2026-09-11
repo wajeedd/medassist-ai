@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -15,6 +17,7 @@ class DashboardService:
     @staticmethod
     def get_dashboard_stats(
         db: Session,
+        current_user_id: UUID,
     ) -> DashboardStats:
 
         # ==========================================
@@ -23,6 +26,9 @@ class DashboardService:
 
         total_patients = (
             db.query(func.count(Patient.id))
+            .filter(
+                Patient.created_by == current_user_id,
+            )
             .scalar()
         ) or 0
 
@@ -32,22 +38,21 @@ class DashboardService:
 
         total_medical_records = (
             db.query(func.count(MedicalRecord.id))
+            .filter(
+                MedicalRecord.doctor_id == current_user_id,
+            )
             .scalar()
         ) or 0
 
         # ==========================================
         # TOTAL AI ANALYSES
-        #
-        # An analysis exists when ai_summary is present.
-        # This includes both:
-        # - Valid risk assessments
-        # - Insufficient Data assessments
         # ==========================================
 
         total_ai_analyses = (
             db.query(MedicalRecord)
             .filter(
-                MedicalRecord.ai_summary.isnot(None)
+                MedicalRecord.doctor_id == current_user_id,
+                MedicalRecord.ai_summary.isnot(None),
             )
             .count()
         )
@@ -59,6 +64,7 @@ class DashboardService:
         high_risk_cases = (
             db.query(MedicalRecord)
             .filter(
+                MedicalRecord.doctor_id == current_user_id,
                 MedicalRecord.ai_risk_score.isnot(None),
                 MedicalRecord.ai_risk_score >= 70,
             )
@@ -72,6 +78,7 @@ class DashboardService:
         moderate_risk_cases = (
             db.query(MedicalRecord)
             .filter(
+                MedicalRecord.doctor_id == current_user_id,
                 MedicalRecord.ai_risk_score.isnot(None),
                 MedicalRecord.ai_risk_score >= 40,
                 MedicalRecord.ai_risk_score < 70,
@@ -86,6 +93,7 @@ class DashboardService:
         low_risk_cases = (
             db.query(MedicalRecord)
             .filter(
+                MedicalRecord.doctor_id == current_user_id,
                 MedicalRecord.ai_risk_score.isnot(None),
                 MedicalRecord.ai_risk_score < 40,
             )
@@ -94,13 +102,12 @@ class DashboardService:
 
         # ==========================================
         # INSUFFICIENT DATA
-        #
-        # AI analysis exists but no valid risk score.
         # ==========================================
 
         insufficient_data_cases = (
             db.query(MedicalRecord)
             .filter(
+                MedicalRecord.doctor_id == current_user_id,
                 MedicalRecord.ai_summary.isnot(None),
                 MedicalRecord.ai_risk_score.is_(None),
             )
@@ -121,6 +128,10 @@ class DashboardService:
                 Patient,
                 MedicalRecord.patient_id == Patient.id,
             )
+            .filter(
+                MedicalRecord.doctor_id == current_user_id,
+                Patient.created_by == current_user_id,
+            )
             .order_by(
                 MedicalRecord.visit_date.desc()
             )
@@ -132,29 +143,17 @@ class DashboardService:
 
         for record, first_name, last_name in records:
 
-            # --------------------------------------
-            # Determine risk level
-            # --------------------------------------
-
             if record.ai_risk_score is None:
-
                 risk_level = "Insufficient Data"
 
             elif record.ai_risk_score >= 70:
-
                 risk_level = "High"
 
             elif record.ai_risk_score >= 40:
-
                 risk_level = "Moderate"
 
             else:
-
                 risk_level = "Low"
-
-            # --------------------------------------
-            # Add recent record
-            # --------------------------------------
 
             recent_records.append(
                 RecentMedicalRecord(
@@ -186,11 +185,10 @@ class DashboardService:
             )
 
         # ==========================================
-        # RETURN DASHBOARD DATA
+        # RETURN
         # ==========================================
 
         return DashboardStats(
-
             total_patients=total_patients,
 
             total_medical_records=(

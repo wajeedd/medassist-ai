@@ -11,6 +11,9 @@ from app.schemas.medical_record import (
 
 class MedicalRecordRepository:
 
+    # -------------------------
+    # Create Medical Record
+    # -------------------------
     @staticmethod
     def create(
         db: Session,
@@ -29,37 +32,64 @@ class MedicalRecordRepository:
 
         return db_record
 
+    # -------------------------
+    # Get Medical Record By ID
+    # -------------------------
     @staticmethod
     def get_by_id(
         db: Session,
         medical_record_id: UUID,
+        doctor_id: UUID,
     ) -> MedicalRecord | None:
 
         return (
             db.query(MedicalRecord)
-            .filter(MedicalRecord.id == medical_record_id)
+            .filter(
+                MedicalRecord.id == medical_record_id,
+                MedicalRecord.doctor_id == doctor_id,
+            )
             .first()
         )
 
+    # -------------------------
+    # Get All Medical Records
+    # -------------------------
     @staticmethod
     def get_all(
         db: Session,
-    ) -> list[MedicalRecord]:
-
-        return db.query(MedicalRecord).all()
-
-    @staticmethod
-    def get_by_patient(
-        db: Session,
-        patient_id: UUID,
+        doctor_id: UUID,
     ) -> list[MedicalRecord]:
 
         return (
             db.query(MedicalRecord)
-            .filter(MedicalRecord.patient_id == patient_id)
+            .filter(
+                MedicalRecord.doctor_id == doctor_id,
+            )
             .all()
         )
 
+    # -------------------------
+    # Get Records By Patient
+    # -------------------------
+    @staticmethod
+    def get_by_patient(
+        db: Session,
+        patient_id: UUID,
+        doctor_id: UUID,
+    ) -> list[MedicalRecord]:
+
+        return (
+            db.query(MedicalRecord)
+            .filter(
+                MedicalRecord.patient_id == patient_id,
+                MedicalRecord.doctor_id == doctor_id,
+            )
+            .all()
+        )
+
+    # -------------------------
+    # Update
+    # -------------------------
     @staticmethod
     def update(
         db: Session,
@@ -67,7 +97,9 @@ class MedicalRecordRepository:
         data: MedicalRecordUpdate,
     ) -> MedicalRecord:
 
-        update_data = data.model_dump(exclude_unset=True)
+        update_data = data.model_dump(
+            exclude_unset=True,
+        )
 
         for key, value in update_data.items():
             setattr(medical_record, key, value)
@@ -77,6 +109,9 @@ class MedicalRecordRepository:
 
         return medical_record
 
+    # -------------------------
+    # Delete
+    # -------------------------
     @staticmethod
     def delete(
         db: Session,

@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.patient import Patient
@@ -37,11 +36,16 @@ class PatientRepository:
     def get_by_id(
         db: Session,
         patient_id: UUID,
+        created_by: UUID,
     ) -> Patient | None:
 
-        return db.get(
-            Patient,
-            patient_id,
+        return (
+            db.query(Patient)
+            .filter(
+                Patient.id == patient_id,
+                Patient.created_by == created_by,
+            )
+            .first()
         )
 
     # -------------------------
@@ -50,12 +54,15 @@ class PatientRepository:
     @staticmethod
     def get_all(
         db: Session,
+        created_by: UUID,
     ) -> list[Patient]:
 
-        stmt = select(Patient)
-
-        return list(
-            db.scalars(stmt).all()
+        return (
+            db.query(Patient)
+            .filter(
+                Patient.created_by == created_by,
+            )
+            .all()
         )
 
     # -------------------------

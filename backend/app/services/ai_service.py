@@ -196,15 +196,20 @@ class AIService:
     def analyze_medical_record(
         db: Session,
         medical_record_id: UUID,
+        doctor_id: UUID,
     ) -> AIAnalysisResponse:
 
         # =================================================
         # GET MEDICAL RECORD
+        #
+        # IMPORTANT:
+        # Only retrieve a record belonging to this doctor.
         # =================================================
 
         medical_record = MedicalRecordRepository.get_by_id(
             db=db,
             medical_record_id=medical_record_id,
+            doctor_id=doctor_id,
         )
 
         if medical_record is None:
@@ -216,11 +221,15 @@ class AIService:
 
         # =================================================
         # GET PATIENT
+        #
+        # IMPORTANT:
+        # Only retrieve a patient belonging to this doctor.
         # =================================================
 
         patient = PatientRepository.get_by_id(
             db=db,
             patient_id=medical_record.patient_id,
+            created_by=doctor_id,
         )
 
         if patient is None:
@@ -363,15 +372,20 @@ class AIService:
     def analyze_patient_history(
         db: Session,
         patient_id: UUID,
+        doctor_id: UUID,
     ) -> LongitudinalAIResponse:
 
         # =================================================
         # GET PATIENT
+        #
+        # IMPORTANT:
+        # Only retrieve a patient belonging to this doctor.
         # =================================================
 
         patient = PatientRepository.get_by_id(
             db=db,
             patient_id=patient_id,
+            created_by=doctor_id,
         )
 
         if patient is None:
@@ -383,11 +397,15 @@ class AIService:
 
         # =================================================
         # GET ALL MEDICAL RECORDS
+        #
+        # IMPORTANT:
+        # Only retrieve records belonging to this doctor.
         # =================================================
 
         records = MedicalRecordRepository.get_by_patient(
             db=db,
             patient_id=patient_id,
+            doctor_id=doctor_id,
         )
 
         # =================================================

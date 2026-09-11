@@ -34,11 +34,13 @@ class PatientService:
     def get_patient(
         self,
         patient_id: UUID,
+        created_by: UUID,
     ) -> Patient:
 
         patient = PatientRepository.get_by_id(
             db=self.db,
             patient_id=patient_id,
+            created_by=created_by,
         )
 
         if patient is None:
@@ -52,10 +54,14 @@ class PatientService:
     # -------------------------
     # Get All Patients
     # -------------------------
-    def get_all_patients(self) -> list[Patient]:
+    def get_all_patients(
+        self,
+        created_by: UUID,
+    ) -> list[Patient]:
 
         return PatientRepository.get_all(
             db=self.db,
+            created_by=created_by,
         )
 
     # -------------------------
@@ -65,9 +71,13 @@ class PatientService:
         self,
         patient_id: UUID,
         patient_data: PatientUpdate,
+        created_by: UUID,
     ) -> Patient:
 
-        patient = self.get_patient(patient_id)
+        patient = self.get_patient(
+            patient_id=patient_id,
+            created_by=created_by,
+        )
 
         return PatientRepository.update(
             db=self.db,
@@ -81,9 +91,13 @@ class PatientService:
     def delete_patient(
         self,
         patient_id: UUID,
+        created_by: UUID,
     ) -> None:
 
-        patient = self.get_patient(patient_id)
+        patient = self.get_patient(
+            patient_id=patient_id,
+            created_by=created_by,
+        )
 
         PatientRepository.delete(
             db=self.db,
