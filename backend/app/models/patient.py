@@ -31,9 +31,15 @@ class Patient(Base):
     # -------------------------
     # Personal Information
     # -------------------------
-    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    first_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
 
-    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    last_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
 
     date_of_birth: Mapped[date] = mapped_column(
         Date,
@@ -135,14 +141,29 @@ class Patient(Base):
     )
 
     # -------------------------
-    # Audit Information
+    # Account / Ownership
     # -------------------------
+
+    # Login account belonging to this patient.
+    # Nullable because existing patients may not have
+    # a patient login account yet.
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=True,
+        unique=True,
+    )
+
+    # Doctor/user who created and manages this patient profile.
     created_by: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id"),
         nullable=False,
     )
 
+    # -------------------------
+    # Audit Information
+    # -------------------------
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -157,10 +178,19 @@ class Patient(Base):
     # -------------------------
     # Relationships
     # -------------------------
+
+    # Doctor who created/manages this patient.
     doctor: Mapped["User"] = relationship(
-        back_populates="patients",
+    back_populates="patients",
+    foreign_keys=[created_by],
+)
+
+    # Patient's own login account.
+    user: Mapped[Optional["User"]] = relationship(
+        foreign_keys=[user_id],
     )
 
+    # Medical records belonging to this patient.
     medical_records: Mapped[list["MedicalRecord"]] = relationship(
         back_populates="patient",
         cascade="all, delete-orphan",

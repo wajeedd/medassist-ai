@@ -4,8 +4,10 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import require_doctor
 from app.models.user import User
+
+from app.schemas.auth import PatientAccountCreate
 
 from app.schemas.patient import (
     PatientCreate,
@@ -34,7 +36,7 @@ router = APIRouter(
 def create_patient(
     patient_data: PatientCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     service = PatientService(db)
 
@@ -54,7 +56,7 @@ def create_patient(
 )
 def get_all_patients(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     service = PatientService(db)
 
@@ -74,7 +76,7 @@ def get_all_patients(
 def get_patient(
     patient_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     service = PatientService(db)
 
@@ -96,7 +98,7 @@ def update_patient(
     patient_id: UUID,
     patient_data: PatientUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     service = PatientService(db)
 
@@ -118,11 +120,35 @@ def update_patient(
 def delete_patient(
     patient_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     service = PatientService(db)
 
     service.delete_patient(
         patient_id=patient_id,
+        created_by=current_user.id,
+    )
+
+
+# =========================================================
+# CREATE PATIENT LOGIN ACCOUNT
+# =========================================================
+
+@router.post(
+    "/{patient_id}/account",
+    response_model=PatientResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_patient_account(
+    patient_id: UUID,
+    account_data: PatientAccountCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_doctor),
+):
+    service = PatientService(db)
+
+    return service.create_patient_account(
+        patient_id=patient_id,
+        account_data=account_data,
         created_by=current_user.id,
     )

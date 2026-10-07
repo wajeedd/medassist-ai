@@ -3,11 +3,11 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.models.medical_record import MedicalRecord
+from app.models.patient import Patient
 from app.schemas.medical_record import (
     MedicalRecordCreate,
     MedicalRecordUpdate,
 )
-
 
 class MedicalRecordRepository:
 
@@ -68,21 +68,23 @@ class MedicalRecordRepository:
             .all()
         )
 
-    # -------------------------
-    # Get Records By Patient
+        # -------------------------
+    # Get Records For Patient Account
     # -------------------------
     @staticmethod
-    def get_by_patient(
+    def get_for_patient(
         db: Session,
-        patient_id: UUID,
-        doctor_id: UUID,
+        patient_user_id: UUID,
     ) -> list[MedicalRecord]:
 
         return (
             db.query(MedicalRecord)
+            .join(
+                Patient,
+                MedicalRecord.patient_id == Patient.id,
+            )
             .filter(
-                MedicalRecord.patient_id == patient_id,
-                MedicalRecord.doctor_id == doctor_id,
+                Patient.user_id == patient_user_id,
             )
             .all()
         )

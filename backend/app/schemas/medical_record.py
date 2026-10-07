@@ -104,3 +104,17 @@ class MedicalRecordResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PatientMedicalRecordResponse(BaseModel):
+    id: UUID
+    patient_id: UUID
+    visit_date: date
+    visit_type: str
+    chief_complaint: Optional[str] = None
+    symptoms: Optional[str] = None
+    diagnosis: Optional[str] = None
+    treatment_plan: Optional[str] = None
+    prescription: Optional[str] = None
+    follow_up_date: Optional[date] = None
+    ai_summary: Optional[str] = None

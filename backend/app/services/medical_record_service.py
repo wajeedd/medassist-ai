@@ -240,3 +240,18 @@ class MedicalRecordService:
         return {
             "message": "Medical record deleted successfully"
         }
+
+    # =========================================================
+    # GET MEDICAL RECORDS FOR PATIENT ACCOUNT
+    # =========================================================
+
+    @staticmethod
+    def get_my_medical_records(
+        db: Session,
+        patient_user_id: UUID,
+    ) -> list[MedicalRecord]:
+
+        return MedicalRecordRepository.get_for_patient(
+            db=db,
+            patient_user_id=patient_user_id,
+        )

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.api.v1 import patient_portal
 from app.core.config import settings
 from app.api.router import router
 
@@ -34,6 +34,7 @@ app.add_middleware(
 # -----------------------------
 
 app.include_router(router)
+app.include_router(patient_portal.router)
 
 
 @app.get("/")

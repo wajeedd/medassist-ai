@@ -70,11 +70,16 @@ class User(Base):
     # -------------------------
     # Relationships
     # -------------------------
+
+    # Patients created/managed by this doctor.
+    # This relationship uses patients.created_by.
     patients: Mapped[list["Patient"]] = relationship(
         back_populates="doctor",
+        foreign_keys="Patient.created_by",
         cascade="all, delete-orphan",
     )
 
+    # Medical records belonging to this doctor.
     medical_records: Mapped[list["MedicalRecord"]] = relationship(
         back_populates="doctor",
         cascade="all, delete-orphan",

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import require_doctor
 from app.models.user import User
 
 from app.schemas.ai import LongitudinalAIResponse
@@ -37,7 +37,7 @@ router = APIRouter(
 def create_medical_record(
     request: MedicalRecordCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     return MedicalRecordService.create_medical_record(
         db=db,
@@ -56,7 +56,7 @@ def create_medical_record(
 )
 def get_all_medical_records(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     return MedicalRecordService.get_all_medical_records(
         db=db,
@@ -78,7 +78,7 @@ def get_all_medical_records(
 def get_patient_medical_records(
     patient_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     return MedicalRecordService.get_patient_medical_records(
         db=db,
@@ -101,7 +101,7 @@ def get_patient_medical_records(
 def analyze_patient_longitudinal_history(
     patient_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     return AIService.analyze_patient_history(
         db=db,
@@ -121,7 +121,7 @@ def analyze_patient_longitudinal_history(
 def analyze_medical_record(
     medical_record_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     # -----------------------------------------------------
     # Run AI analysis only for a record owned by this doctor
@@ -155,7 +155,7 @@ def analyze_medical_record(
 def get_medical_record(
     medical_record_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     return MedicalRecordService.get_medical_record(
         db=db,
@@ -176,7 +176,7 @@ def update_medical_record(
     medical_record_id: UUID,
     request: MedicalRecordUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     return MedicalRecordService.update_medical_record(
         db=db,
@@ -196,7 +196,7 @@ def update_medical_record(
 def delete_medical_record(
     medical_record_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor),
 ):
     return MedicalRecordService.delete_medical_record(
         db=db,
