@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, Stethoscope } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,7 +7,13 @@ import { useAuth } from "../../contexts/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+
+  const {
+    login,
+    user,
+    isAuthenticated,
+    loading: authLoading,
+  } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,6 +21,32 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // =====================================================
+  // ROLE-BASED REDIRECT
+  // =====================================================
+
+  useEffect(() => {
+    if (!isAuthenticated || authLoading || !user) {
+      return;
+    }
+
+    if (user.role === "patient") {
+      navigate("/patient-dashboard", { replace: true });
+      return;
+    }
+
+    navigate("/dashboard", { replace: true });
+  }, [
+    isAuthenticated,
+    authLoading,
+    user,
+    navigate,
+  ]);
+
+  // =====================================================
+  // LOGIN
+  // =====================================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,16 +63,15 @@ function Login() {
 
       login(response.access_token);
 
-      navigate("/dashboard");
-
     } catch (err) {
-
       if (err.response) {
-        setError(err.response.data.detail);
+        setError(
+          err.response.data?.detail ||
+            "Invalid email or password."
+        );
       } else {
         setError("Unable to connect to server.");
       }
-
     } finally {
       setLoading(false);
     }
@@ -82,7 +113,6 @@ function Login() {
 
           {/* Email */}
           <div>
-
             <label className="font-medium text-gray-700">
               Email Address
             </label>
@@ -97,12 +127,10 @@ function Login() {
               className="w-full mt-2 border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none"
               required
             />
-
           </div>
 
           {/* Password */}
           <div>
-
             <label className="font-medium text-gray-700">
               Password
             </label>
@@ -131,15 +159,14 @@ function Login() {
                   setShowPassword(!showPassword)
                 }
               >
-                {
-                  showPassword
-                    ? <EyeOff size={20} />
-                    : <Eye size={20} />
-                }
+                {showPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
               </button>
 
             </div>
-
           </div>
 
           {/* Remember Me */}
@@ -165,13 +192,11 @@ function Login() {
           </div>
 
           {/* Error */}
-          {
-            error && (
-              <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg p-3">
-                {error}
-              </div>
-            )
-          }
+          {error && (
+            <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg p-3">
+              {error}
+            </div>
+          )}
 
           {/* Login */}
           <button
@@ -179,11 +204,9 @@ function Login() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50"
           >
-            {
-              loading
-                ? "Logging in..."
-                : "Login"
-            }
+            {loading
+              ? "Logging in..."
+              : "Login"}
           </button>
 
         </form>
@@ -194,12 +217,12 @@ function Login() {
           Don't have an account?
 
           <button
-  type="button"
-  onClick={() => navigate("/register")}
-  className="text-blue-600 font-semibold ml-2 hover:underline"
->
-  Register
-</button>
+            type="button"
+            onClick={() => navigate("/register")}
+            className="text-blue-600 font-semibold ml-2 hover:underline"
+          >
+            Register
+          </button>
 
         </p>
 

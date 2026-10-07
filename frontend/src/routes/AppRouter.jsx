@@ -10,6 +10,7 @@ import MedicalRecords from "../pages/MedicalRecords";
 import AI from "../pages/AI";
 import Reports from "../pages/Reports";
 import Settings from "../pages/Settings";
+import PatientDashboard from "../pages/PatientDashboard";
 import NotFound from "../pages/NotFound";
 
 
@@ -42,7 +43,21 @@ function AppRouter() {
 
 
         {/* ==========================================
-            PROTECTED ROUTES
+            PATIENT ROUTES
+        ========================================== */}
+
+        <Route
+          path="/patient-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["patient"]}>
+              <PatientDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* ==========================================
+            DOCTOR / PROTECTED ROUTES
         ========================================== */}
 
         <Route
